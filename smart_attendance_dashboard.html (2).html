@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="aurora" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AttendPulse | Smart Attendance & Detention Prevention Hub</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts: Plus Jakarta Sans, Space Grotesk, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* THEME VARIABLE ENGINE */
+    :root, [data-theme="aurora"] {
+      --bg-main: #060913;
+      --card-bg: rgba(14, 20, 36, 0.78);
+      --card-border: rgba(16, 185, 129, 0.22);
+      --card-border-subtle: rgba(255, 255, 255, 0.08);
+      --primary: #10B981; /* Emerald-Mint */
+      --primary-glow: rgba(16, 185, 129, 0.45);
+      --secondary: #06B6D4; /* Cyan */
+      --accent: #8B5CF6; /* Violet */
+      --danger: #F43F5E; /* Neon Rose */
+      --warning: #F59E0B; /* Amber */
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --badge-bg: rgba(16, 185, 129, 0.15);
+      --badge-text: #34D399;
+      --radius-box: 1.5rem;
+      --radius-btn: 1rem;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7), 0 0 25px -5px rgba(16, 185, 129, 0.15);
+      --neo-border-width: 1px;
+    }
+
+    /* THEME 2: SOLAR SUNSET / HYPER-ORANGE */
+    [data-theme="solar"] {
+      --bg-main: #0E0716;
+      --card-bg: rgba(28, 14, 40, 0.82);
+      --card-border: rgba(255, 85, 0, 0.35);
+      --card-border-subtle: rgba(255, 120, 50, 0.12);
+      --primary: #FF5500; /* Vibrant Tangerine */
+      --primary-glow: rgba(255, 85, 0, 0.55);
+      --secondary: #FB7185; /* Hot Coral */
+      --accent: #FBBF24; /* Luminous Amber */
+      --danger: #E11D48;
+      --warning: #F97316;
+      --text-main: #FFF7ED;
+      --text-muted: #D1A3B8;
+      --badge-bg: rgba(255, 85, 0, 0.18);
+      --badge-text: #FF944D;
+      --radius-box: 1.5rem;
+      --radius-btn: 1rem;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8), 0 0 30px -5px rgba(255, 85, 0, 0.25);
+      --neo-border-width: 1px;
+    }
+
+    /* THEME 3: CYBERPUNK 2077 MATRIX */
+    [data-theme="cyberpunk"] {
+      --bg-main: #08080C;
+      --card-bg: rgba(18, 18, 26, 0.92);
+      --card-border: #FCEE0A; /* Neon High-Voltage Yellow */
+      --card-border-subtle: rgba(252, 238, 10, 0.25);
+      --primary: #FCEE0A; 
+      --primary-glow: rgba(252, 238, 10, 0.5);
+      --secondary: #00F0FF; /* High-Voltage Cyan */
+      --accent: #FF0055; /* Neon Pink */
+      --danger: #FF0055;
+      --warning: #FCEE0A;
+      --text-main: #FFFFFF;
+      --text-muted: #8E92A4;
+      --badge-bg: rgba(252, 238, 10, 0.15);
+      --badge-text: #FCEE0A;
+      --radius-box: 0.5rem;
+      --radius-btn: 0.35rem;
+      --font-body: 'JetBrains Mono', monospace;
+      --card-shadow: 0 0 20px rgba(252, 238, 10, 0.15), 3px 3px 0px #00F0FF;
+      --neo-border-width: 2px;
+    }
+
+    /* THEME 4: NEO-BRUTALISM POP */
+    [data-theme="neobrutal"] {
+      --bg-main: #FFF8E7; /* Cream Vanilla */
+      --card-bg: #FFFFFF;
+      --card-border: #000000;
+      --card-border-subtle: #000000;
+      --primary: #3B82F6; /* Bright Pop Blue */
+      --primary-glow: transparent;
+      --secondary: #FFDF00; /* Vivid Pop Yellow */
+      --accent: #FF006E; /* Pop Hot Pink */
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      --text-main: #000000;
+      --text-muted: #334155;
+      --badge-bg: #E2E8F0;
+      --badge-text: #000000;
+      --radius-box: 0.75rem;
+      --radius-btn: 0.5rem;
+      --font-body: 'Space Grotesk', sans-serif;
+      --card-shadow: 5px 5px 0px #000000;
+      --neo-border-width: 2.5px;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      min-height: 100vh;
+    }
+
+    .theme-card {
+      background-color: var(--card-bg);
+      border: var(--neo-border-width) solid var(--card-border-subtle);
+      border-radius: var(--radius-box);
+      box-shadow: var(--card-shadow);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: all 0.25s ease;
+    }
+
+    .theme-card:hover {
+      border-color: var(--card-border);
+    }
+
+    .theme-btn-primary {
+      background-color: var(--primary);
+      color: #000000;
+      font-weight: 800;
+      border-radius: var(--radius-btn);
+      box-shadow: 0 4px 18px var(--primary-glow);
+      transition: all 0.2s ease;
+    }
+    .theme-btn-primary:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+    .theme-btn-primary:active {
+      transform: translateY(0);
+    }
+
+    /* Neo-Brutalist button special */
+    [data-theme="neobrutal"] .theme-btn-primary {
+      color: #FFFFFF;
+      background-color: #000000;
+      box-shadow: 3px 3px 0px #FF006E;
+      border: 2px solid #000000;
+    }
+    [data-theme="neobrutal"] .theme-btn-primary:hover {
+      box-shadow: 5px 5px 0px #FF006E;
+      transform: translate(-2px, -2px);
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white !important; color: black !important; }
+      .no-print { display: none !important; }
+      .theme-card { border: 1px solid #ccc !important; box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body class="selection:bg-emerald-500 selection:text-black">
+
+
+  <!-- Top Notification Toast Mount -->
+  <div id="toast-shelf" class="fixed top-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none"></div>
+
+  <!-- FULL-SCREEN ATTENDANCE DANGER WARNING MODAL (Appears on Login if < 75%) -->
+  <div id="danger-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl">
+    <div id="danger-modal-box" class="relative w-full max-w-lg theme-card p-6 sm:p-8 text-center border-2 border-rose-500 shadow-2xl transition-all duration-300 scale-95 opacity-0">
+      <div class="w-20 h-20 mx-auto rounded-full bg-rose-500/10 border-2 border-rose-500 flex items-center justify-center mb-4 animate-bounce">
+        <i data-lucide="shield-alert" class="w-10 h-10 text-rose-500"></i>
+      </div>
+      
+      <span class="inline-block px-3 py-1 bg-rose-500/20 text-rose-400 font-extrabold text-[11px] rounded-full uppercase tracking-wider mb-3">
+        Regulatory Shortage Alert
+      </span>
+
+      <h3 class="text-2xl font-black mb-2 text-white">⚠️ Attendance Warning</h3>
+      <p class="text-sm leading-relaxed text-slate-300 mb-4">
+        Your current overall attendance is <strong id="modal-att-pct" class="text-rose-400 text-xl font-black">68.0%</strong>.
+        College requires a mandatory minimum of <strong class="text-white">75% attendance</strong> to be eligible for semester examinations. Attend upcoming classes to avoid shortage and academic detention.
+      </p>
+
+      <div id="modal-irr-alert" class="hidden mb-5 p-3.5 bg-rose-950/70 border border-rose-500 rounded-xl text-left text-xs text-rose-200">
+        <div class="flex items-center gap-1.5 font-black text-rose-400 mb-1">
+          <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+          <span>IRREVERSIBLE DETENTION ALERT</span>
+        </div>
+        Even with 100% attendance in all classes left till Nov 29, 2026, reaching 75% is mathematically impossible. Meet your Class Advisor immediately!
+      </div>
+
+      <button id="modal-ok-btn" class="w-full py-3.5 px-4 bg-rose-600 hover:bg-rose-500 text-white font-black text-sm rounded-xl shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+        <span>OK, Continue to Dashboard</span>
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- AUTH SECTION (Login & Signup) -->
+  <section id="auth-section" class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative">
+    
+    <!-- Top Floating Theme Switcher on Login Page -->
+    <div class="absolute top-5 right-5 z-20 flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-2xl border border-white/10">
+      <span class="text-[11px] font-bold px-2 text-slate-400 uppercase tracking-wider hidden sm:inline">Theme:</span>
+      <select id="login-theme-selector" onchange="applyGlobalTheme(this.value)" class="bg-black/60 text-xs font-bold py-1.5 px-3 rounded-xl border border-white/20 text-white outline-none">
+        <option value="aurora" selected>🌌 Aurora Cosmic</option>
+        <option value="solar">🔥 Solar Sunset</option>
+        <option value="cyberpunk">⚡ Cyberpunk 2077</option>
+        <option value="neobrutal">🎨 Neo-Brutal Pop</option>
+      </select>
+    </div>
+
+    <div class="w-full max-w-xl">
+      <!-- App Brand Header -->
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-400 to-cyan-500 text-black shadow-lg shadow-emerald-500/20 mb-3">
+          <i data-lucide="zap" class="w-8 h-8"></i>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-black tracking-tight">
+          Attend<span style="color: var(--primary);">Pulse</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-sm mx-auto">
+          Fall Semester: Aug 29 – Nov 29, 2026. Stay clear of detention with real-time class intelligence.
+        </p>
+      </div>
+
+      <!-- Quick 1-Click Demo Profiles Container -->
+      <div class="theme-card p-4 mb-4 border border-dashed border-white/20">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider flex items-center gap-1" style="color: var(--primary);">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> 1-Click Test Student Profiles:
+          </span>
+          <span class="text-[10px] text-slate-400">Loads realistic curriculum data</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <button type="button" onclick="quickDemoLogin('harsha')" class="p-2.5 rounded-xl bg-slate-900/80 hover:bg-rose-950/40 border border-rose-500/40 text-left transition group">
+            <span class="text-xs font-black text-rose-400 flex items-center gap-1">
+              🚨 Harsha (AIML B)
+            </span>
+            <span class="text-[10px] text-slate-400 block mt-0.5">68.8% Severe Shortage</span>
+          </button>
+          <button type="button" onclick="quickDemoLogin('rahul')" class="p-2.5 rounded-xl bg-slate-900/80 hover:bg-amber-950/40 border border-amber-500/40 text-left transition group">
+            <span class="text-xs font-black text-amber-400 flex items-center gap-1">
+              ⚠️ Rahul (AIDS C)
+            </span>
+            <span class="text-[10px] text-slate-400 block mt-0.5">74.2% Border Zone</span>
+          </button>
+          <button type="button" onclick="quickDemoLogin('sneha')" class="p-2.5 rounded-xl bg-slate-900/80 hover:bg-emerald-950/40 border border-emerald-500/40 text-left transition group">
+            <span class="text-xs font-black text-emerald-400 flex items-center gap-1">
+              ✨ Sneha (CSE CORE A)
+            </span>
+            <span class="text-[10px] text-slate-400 block mt-0.5">93.5% Honors Safe</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Auth Form Card -->
+      <div class="theme-card p-6 sm:p-8 relative">
+        <!-- Auth Tabs -->
+        <div class="flex border-b border-white/10 mb-5 font-bold text-sm">
+          <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 pb-3 text-center border-b-2" style="border-color: var(--primary); color: var(--primary);">
+            Student Sign In
+          </button>
+          <button id="tab-register" onclick="switchAuthTab('register')" class="flex-1 pb-3 text-center border-b-2 border-transparent text-slate-400 hover:text-white transition">
+            New Registration
+          </button>
+        </div>
+
+        <!-- Form: Sign In -->
+        <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+              College Email <span class="text-rose-500 font-bold">*</span>
+            </label>
+            <div class="relative">
+              <i data-lucide="mail" class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400"></i>
+              <input type="email" id="login-email" required placeholder="harsha@college.edu.in" class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-sm outline-none focus:border-emerald-400 text-white">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+              Password <span class="text-rose-500 font-bold">*</span>
+            </label>
+            <div class="relative">
+              <i data-lucide="lock" class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400"></i>
+              <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-sm outline-none focus:border-emerald-400 text-white">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 theme-btn-primary text-sm flex items-center justify-center gap-2 mt-2">
+            <span>Enter Dashboard</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </form>
+
+        <!-- Form: Register (Includes all mandatory asterisks) -->
+        <form id="form-register" onsubmit="handleRegisterSubmit(event)" class="space-y-3.5 hidden">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+              Full Name <span class="text-rose-500 font-bold">*</span>
+            </label>
+            <input type="text" id="reg-name" required placeholder="e.g. Harsha Vardhan" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-sm outline-none text-white focus:border-emerald-400">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+                Class Section <span class="text-rose-500 font-bold">*</span>
+              </label>
+              <select id="reg-section" required class="w-full px-3 py-2.5 rounded-xl bg-black/80 border border-white/15 text-xs font-bold text-white outline-none focus:border-emerald-400">
+                <optgroup label="AI & Machine Learning (AIML)">
+                  <option value="AIML A">AIML A</option>
+                  <option value="AIML B">AIML B</option>
+                  <option value="AIML C">AIML C</option>
+                  <option value="AIML D">AIML D</option>
+                  <option value="AIML E">AIML E</option>
+                </optgroup>
+                <optgroup label="AI & Data Science (AIDS)">
+                  <option value="AIDS C">AIDS C</option>
+                </optgroup>
+                <optgroup label="Computer Science & Engg (CSE CORE)">
+                  <option value="CSE CORE A">CSE CORE A</option>
+                  <option value="CSE CORE B">CSE CORE B</option>
+                  <option value="CSE CORE C">CSE CORE C</option>
+                  <option value="CSE CORE D">CSE CORE D</option>
+                  <option value="CSE CORE E">CSE CORE E</option>
+                </optgroup>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+                Register No <span class="text-rose-500 font-bold">*</span>
+              </label>
+              <input type="text" id="reg-regno" required placeholder="RA2611003010452" pattern="RA26110[0-9]{6}" title="Format: RA26110****** (e.g. RA2611003010452)" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-xs font-mono font-bold uppercase text-white outline-none focus:border-emerald-400">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+              College Email <span class="text-rose-500 font-bold">*</span>
+            </label>
+            <input type="email" id="reg-email" required placeholder="harsha@college.edu.in" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-sm outline-none text-white focus:border-emerald-400">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+              Password <span class="text-rose-500 font-bold">*</span>
+            </label>
+            <input type="password" id="reg-password" minlength="6" required placeholder="Min 6 characters" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-sm outline-none text-white focus:border-emerald-400">
+          </div>
+
+          <button type="submit" class="w-full py-3.5 theme-btn-primary text-sm flex items-center justify-center gap-2 mt-2">
+            <span>Register & Setup Curriculum</span>
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- DASHBOARD MAIN VIEW -->
+  <main id="dashboard-section" class="hidden min-h-screen pb-20">
+    
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 theme-card border-b rounded-none border-white/10 bg-opacity-90">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        
+        <!-- Brand & Section Badge -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-400 to-cyan-500 text-black flex items-center justify-center font-black">
+            <i data-lucide="zap" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-black tracking-tight">Attend<span style="color: var(--primary);">Pulse</span></span>
+              <span id="nav-section-badge" class="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-white/10 border border-white/20">
+                AIML B
+              </span>
+            </div>
+            <p class="text-[10px] text-slate-400 font-mono">Aug 29 – Nov 29, 2026</p>
+          </div>
+        </div>
+
+        <!-- Controls: Theme Switcher, Add Subject, Print, Sign Out -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          
+          <!-- Theme Switcher Pill -->
+          <div class="flex items-center gap-1.5 bg-black/40 border border-white/15 px-2.5 py-1.5 rounded-xl">
+            <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-400"></i>
+            <select id="dash-theme-selector" onchange="applyGlobalTheme(this.value)" class="bg-transparent text-xs font-bold outline-none cursor-pointer text-white">
+              <option value="aurora" selected>🌌 Aurora Cosmic</option>
+              <option value="solar">🔥 Solar Sunset</option>
+              <option value="cyberpunk">⚡ Cyberpunk 2077</option>
+              <option value="neobrutal">🎨 Neo-Brutal Pop</option>
+            </select>
+          </div>
+
+          <!-- Add Custom Subject Modal Trigger -->
+          <button onclick="openAddSubjectModal()" class="px-3 py-1.5 rounded-xl theme-btn-primary text-xs font-black flex items-center gap-1">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Add Custom Subject</span>
+          </button>
+
+          <!-- Print / PDF Export -->
+          <button onclick="window.print()" title="Export PDF / Print" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+          </button>
+
+          <!-- User Avatar & Sign Out -->
+          <div class="flex items-center gap-2 pl-2 border-l border-white/10">
+            <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center font-bold text-xs" id="nav-avatar-initial">
+              H
+            </div>
+            <div class="hidden md:block text-left">
+              <p id="nav-user-name" class="text-xs font-black truncate max-w-[100px]">Harsha</p>
+              <p id="nav-user-regno" class="text-[10px] text-slate-400 font-mono">RA2611003010452</p>
+            </div>
+            <button onclick="executeSignOut()" title="Sign Out" class="p-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Urgent Top Warning Strip (Visible if < 75%) -->
+    <div id="top-danger-banner" class="hidden bg-rose-600 text-white px-4 py-2 text-xs font-bold shadow-lg">
+      <div class="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-yellow-300"></i>
+          <span>SHORTAGE ALERT: Overall attendance is <strong id="banner-att-pct" class="underline">68.8%</strong>. Mandatory minimum is 75.0%.</span>
+        </div>
+        <button onclick="scrollToCalculator()" class="px-2.5 py-0.5 rounded bg-black text-white font-mono text-[10px] uppercase">
+          Jump to Recovery Planner &rarr;
+        </button>
+      </div>
+    </div>
+
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+      <!-- ENERGETIC HERO GREETING BANNER -->
+      <section class="theme-card p-6 sm:p-8 relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs font-mono mb-3">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span id="hero-date-display">Monday, Sep 28, 2026 • Fall Term</span>
+          </div>
+
+          <h2 class="text-2xl sm:text-4xl font-black tracking-tight" id="hero-welcome-title">
+            🔥 Let's crush this semester, Harsha!
+          </h2>
+
+          <p class="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed" id="hero-quote-text">
+            "Track every class. Never fall below 75%. Smart attendance insights with automated curriculum forecasting."
+          </p>
+
+          <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
+            <span class="px-2.5 py-1 rounded-lg bg-black/40 border border-white/10 font-mono text-cyan-300">
+              Semester: 29 Aug 2026 ➔ 29 Nov 2026
+            </span>
+            <span id="hero-compliance-pill" class="px-2.5 py-1 rounded-lg font-bold bg-white/10 border border-white/15">
+              Evaluating Status...
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOP METRIC CARDS -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- 1. Overall Percentage Gauge -->
+        <div class="theme-card p-5 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Attendance</p>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span id="metric-overall-pct" class="text-3xl font-black">--%</span>
+              <span id="metric-status-badge" class="text-[10px] px-2 py-0.5 rounded-full font-bold">--</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1 font-mono">
+              Attended: <strong id="metric-attended-classes" class="text-white">0</strong> / <span id="metric-conducted-classes">0</span>
+            </p>
+          </div>
+          <!-- SVG Radial Progress Ring -->
+          <div class="relative w-16 h-16 shrink-0">
+            <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path id="svg-radial-bar" class="text-emerald-400 stroke-current transition-all duration-700" stroke-linecap="round" stroke-width="3.5" stroke-dasharray="0, 100" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center font-bold text-xs" id="svg-radial-label">--%</div>
+          </div>
+        </div>
+
+        <!-- 2. Today's Marked Classes -->
+        <div class="theme-card p-5">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase">
+            <span>Today's Check-ins</span>
+            <i data-lucide="check-circle" class="w-4 h-4 text-cyan-400"></i>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="metric-today-marked" class="text-3xl font-black">0</span>
+            <span class="text-xs text-slate-400 font-mono">/ <span id="metric-today-total">5</span> lectures</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1" id="metric-today-subtext">Check in for Monday slots</p>
+        </div>
+
+        <!-- 3. Safe Bunks / 75% Target -->
+        <div class="theme-card p-5">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase">
+            <span id="metric-75-heading">75% Recovery Target</span>
+            <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="metric-75-value" class="text-3xl font-black text-rose-400">--</span>
+            <span class="text-xs text-slate-400" id="metric-75-units">classes</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1" id="metric-75-desc">Required consecutively</p>
+        </div>
+
+        <!-- 4. 90% Honors Goal -->
+        <div class="theme-card p-5">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase">
+            <span>90% Honors Goal</span>
+            <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="metric-90-value" class="text-3xl font-black">--</span>
+            <span class="text-xs text-slate-400">classes</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1" id="metric-90-desc">To reach top merit band</p>
+        </div>
+      </section>
+
+
+      <!-- CORE CALCULATOR & FUTURE DATE PLANNER -->
+      <section id="calculator-section" class="theme-card p-6 sm:p-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-white/10">
+          <div>
+            <div class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-cyan-400 mb-1">
+              <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+              <span>Core Mathematical Detention Engine</span>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-black">Attendance Forecaster & Date Planner</h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Simulate recovery trajectory till any target date or full semester close (29 Nov 2026).
+            </p>
+          </div>
+
+          <!-- Section Switch & Date Controls -->
+          <div class="flex flex-wrap items-center gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Class Section</label>
+              <select id="calc-section-select" onchange="handleSectionChange(this.value)" class="bg-black/60 border border-white/20 px-3 py-2 rounded-xl text-xs font-bold text-white outline-none">
+                <optgroup label="AI & Machine Learning (AIML)">
+                  <option value="AIML A">AIML A</option>
+                  <option value="AIML B">AIML B</option>
+                  <option value="AIML C">AIML C</option>
+                  <option value="AIML D">AIML D</option>
+                  <option value="AIML E">AIML E</option>
+                </optgroup>
+                <optgroup label="AI & Data Science (AIDS)">
+                  <option value="AIDS C">AIDS C</option>
+                </optgroup>
+                <optgroup label="Computer Science & Engg (CSE CORE)">
+                  <option value="CSE CORE A">CSE CORE A</option>
+                  <option value="CSE CORE B">CSE CORE B</option>
+                  <option value="CSE CORE C">CSE CORE C</option>
+                  <option value="CSE CORE D">CSE CORE D</option>
+                  <option value="CSE CORE E">CSE CORE E</option>
+                </optgroup>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Target Planning Date</label>
+              <input type="date" id="calc-target-date" min="2026-09-28" max="2026-11-29" value="2026-11-29" onchange="runCalculator()" class="bg-black/60 border border-white/20 px-3 py-2 rounded-xl text-xs font-bold text-white outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Output Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div class="p-5 rounded-2xl bg-black/40 border border-white/10">
+            <span class="text-xs font-bold text-slate-400 uppercase block">Classes Remaining</span>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span id="calc-out-remaining" class="text-4xl font-black text-cyan-400">--</span>
+              <span class="text-xs text-slate-400 font-mono">classes left</span>
+            </div>
+            <p id="calc-out-remaining-desc" class="text-xs text-slate-400 mt-2 font-mono">
+              In chosen interval until target date
+            </p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-black/40 border border-white/10">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 uppercase">75% Mandatory Target</span>
+              <span id="calc-out-75-badge" class="px-2 py-0.5 rounded text-[10px] font-black uppercase">--</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span id="calc-out-75-num" class="text-4xl font-black">--</span>
+              <span id="calc-out-75-sub" class="text-xs text-slate-400">classes</span>
+            </div>
+            <p id="calc-out-75-info" class="text-xs text-slate-400 mt-2">Analyzing...</p>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-black/40 border border-white/10">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 uppercase">90% Merit Goal</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40">Target</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span id="calc-out-90-num" class="text-4xl font-black">--</span>
+              <span class="text-xs text-slate-400">classes needed</span>
+            </div>
+            <p id="calc-out-90-info" class="text-xs text-slate-400 mt-2">Classes required consecutively for 90%</p>
+          </div>
+        </div>
+
+        <!-- Irreversible Detention Alert Banner -->
+        <div id="calc-irr-warning" class="hidden mt-6 p-4 rounded-2xl bg-rose-950/80 border-2 border-rose-500 text-rose-200 flex items-start gap-3">
+          <i data-lucide="shield-x" class="w-6 h-6 text-rose-500 shrink-0 mt-0.5 animate-pulse"></i>
+          <div>
+            <h4 class="font-black text-sm uppercase tracking-wider text-rose-400">
+              🚨 IRREVERSIBLE DETENTION ALERT DETECTED
+            </h4>
+            <p class="text-xs mt-1 leading-relaxed">
+              Even if you attend <strong>100% of all <span id="irr-classes-left">--</span> remaining classes</strong> until the semester ends on November 29, 2026, your maximum achievable attendance will be <strong id="irr-max-pct" class="text-white underline">--%</strong> (Below the mandatory 75.0% threshold). Urgent representation to the Dean / Advisor is strongly advised.
+            </p>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- TODAY'S ONE-TAP CLASS CHECK-IN -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-black">Today's Class Check-in</h3>
+            <p class="text-xs text-slate-400">Monday, Sep 28, 2026 • 1-tap Present / Absent with timestamps</p>
+          </div>
+          <span class="text-xs font-mono font-bold px-3 py-1 rounded-xl bg-white/5 border border-white/10">
+            Schedule: <strong id="today-sec-badge" class="text-cyan-400">AIML B</strong>
+          </span>
+        </div>
+
+        <div id="today-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+
+      <!-- SUBJECT WISE ATTENDANCE WITH UNLIMITED SUBJECTS -->
+      <section class="theme-card p-6 sm:p-8 space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-xl font-black">Course Subjects & Safe Bunk Tracker</h3>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                Unlimited Subjects
+              </span>
+            </div>
+            <p class="text-xs text-slate-400">
+              Auto-mapped for your branch. Use <strong>+P</strong> and <strong>+A</strong> on any card to simulate extra attendance.
+            </p>
+          </div>
+          <button onclick="openAddSubjectModal()" class="px-4 py-2.5 rounded-xl theme-btn-primary text-xs flex items-center justify-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add Custom Course</span>
+          </button>
+        </div>
+
+        <!-- Subject Cards Grid -->
+        <div id="subjects-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+
+      <!-- SEMESTER TREND CHART & CODE OF CONDUCT -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Canvas Chart -->
+        <div class="lg:col-span-2 theme-card p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-base font-black flex items-center gap-2">
+                <i data-lucide="trending-up" class="w-4 h-4 text-cyan-400"></i>
+                <span>Semester Trajectory & Forecast</span>
+              </h3>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 text-slate-400">Aug 29 – Nov 29</span>
+            </div>
+            <p class="text-xs text-slate-400 mb-4">Actuals vs projected end-term curve.</p>
+            <div class="relative w-full h-44">
+              <canvas id="semesterChart" class="w-full h-full"></canvas>
+            </div>
+          </div>
+          <div class="grid grid-cols-4 gap-2 pt-3 border-t border-white/10 text-center font-mono text-xs">
+            <div>
+              <span class="text-slate-400 text-[10px]">Aug</span>
+              <p id="stat-aug" class="font-bold">--%</p>
+            </div>
+            <div>
+              <span class="text-slate-400 text-[10px]">Sep</span>
+              <p id="stat-sep" class="font-bold text-cyan-400">--%</p>
+            </div>
+            <div>
+              <span class="text-slate-400 text-[10px]">Oct (Proj)</span>
+              <p id="stat-oct" class="font-bold text-emerald-400">--%</p>
+            </div>
+            <div>
+              <span class="text-slate-400 text-[10px]">Nov (Final)</span>
+              <p id="stat-nov" class="font-bold text-purple-400">--%</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic Regulation Summary -->
+        <div class="theme-card p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-black flex items-center gap-2 mb-2">
+              <i data-lucide="info" class="w-4 h-4 text-emerald-400"></i>
+              <span>Regulation Thresholds</span>
+            </h3>
+            <p class="text-xs text-slate-400 mb-4">SRM / University Attendance Regulations</p>
+
+            <div class="space-y-2.5 text-xs">
+              <div class="p-3 rounded-xl bg-black/40 border border-white/10">
+                <span class="font-black text-emerald-400 block">&ge; 90% Honors Safe</span>
+                <span class="text-slate-400 text-[11px]">Eligible for top exam grade incentives & distinctions.</span>
+              </div>
+              <div class="p-3 rounded-xl bg-black/40 border border-white/10">
+                <span class="font-black text-cyan-400 block">75% - 89% Standard Compliant</span>
+                <span class="text-slate-400 text-[11px]">Regular hall ticket issuance without condonation fee.</span>
+              </div>
+              <div class="p-3 rounded-xl bg-black/40 border border-white/10">
+                <span class="font-black text-rose-400 block">&lt; 75% Detention Zone</span>
+                <span class="text-slate-400 text-[11px]">Debarred from end-semester final examinations.</span>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="scrollToCalculator()" class="mt-4 w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold transition">
+            Recalculate Condonation Margin &rarr;
+          </button>
+        </div>
+      </section>
+
+      <!-- AUDIT LOG & SEARCHABLE HISTORY TABLE -->
+      <section class="theme-card p-6 sm:p-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-xl font-black">Attendance History Log</h3>
+            <p class="text-xs text-slate-400">Searchable lecture records with live status toggling.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="text" id="history-search" oninput="renderHistoryTable()" placeholder="Search subject or faculty..." class="px-3 py-1.5 rounded-xl bg-black/60 border border-white/15 text-xs text-white outline-none">
+            <select id="history-status-filter" onchange="renderHistoryTable()" class="px-3 py-1.5 rounded-xl bg-black/60 border border-white/15 text-xs text-white outline-none">
+              <option value="ALL">All Status</option>
+              <option value="PRESENT">Present Only</option>
+              <option value="ABSENT">Absent Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-white/10">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-black/60 text-slate-400 font-bold uppercase text-[10px]">
+              <tr>
+                <th class="py-3 px-4">Date</th>
+                <th class="py-3 px-4">Subject</th>
+                <th class="py-3 px-4">Faculty</th>
+                <th class="py-3 px-4 font-mono">Timestamp</th>
+                <th class="py-3 px-4 text-center">Status</th>
+                <th class="py-3 px-4 text-right">Quick Action</th>
+              </tr>
+            </thead>
+            <tbody id="history-rows" class="divide-y divide-white/10">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+
+  <!-- MODAL: ADD CUSTOM SUBJECT -->
+  <div id="add-subject-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full max-w-md theme-card p-6 sm:p-7 relative">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+        <div>
+          <h3 class="text-lg font-black">Add Custom Subject</h3>
+          <p class="text-xs text-slate-400">Add any course or laboratory module without limits.</p>
+        </div>
+        <button onclick="closeAddSubjectModal()" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-add-subject" onsubmit="handleAddSubjectSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Subject Name <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <input type="text" id="cust-name" required placeholder="e.g. Natural Language Processing" class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-xs font-bold text-white outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Faculty Name <span class="text-rose-500 font-bold">*</span>
+          </label>
+          <input type="text" id="cust-faculty" required placeholder="e.g. Dr. K. Raman" class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-xs font-bold text-white outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+              Classes Attended
+            </label>
+            <input type="number" id="cust-attended" min="0" value="18" required class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-xs font-mono font-bold text-white outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+              Total Classes
+            </label>
+            <input type="number" id="cust-total" min="1" value="24" required class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/20 text-xs font-mono font-bold text-white outline-none">
+          </div>
+        </div>
+        <button type="submit" class="w-full mt-2 py-3 rounded-xl theme-btn-primary text-xs font-black flex items-center justify-center gap-1.5">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Save Subject to Dashboard</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+
+  <script>
+    // TIMELINE CONSTANTS (Aug 29, 2026 - Nov 29, 2026)
+    const SEMESTER_START = new Date("2026-08-29T00:00:00");
+    const SEMESTER_END = new Date("2026-11-29T23:59:59");
+    const TODAY_SIM = new Date("2026-09-28T11:02:00"); // Sep 28 is Monday
+
+    // SPECIFIC BRANCH SYLLABI DEFINITIONS
+    const BRANCH_CURRICULA = {
+      AIML: [
+        { id: "AIML_AI", name: "Artificial Intelligence", faculty: "Dr. Stuart Russell" },
+        { id: "AIML_DL", name: "Deep Learning", faculty: "Prof. Yoshua Bengio" },
+        { id: "AIML_ML", name: "Machine Learning Foundations", faculty: "Dr. Andrew Ng" },
+        { id: "AIML_DSA", name: "Data Structures & Algorithms", faculty: "Prof. Donald Knuth" },
+        { id: "AIML_DM", name: "Discrete Mathematics", faculty: "Dr. Paul Erdős" },
+        { id: "AIML_ETH", name: "AI Ethics & Society Lab", faculty: "Dr. Timnit Gebru" }
+      ],
+      AIDS: [
+        { id: "AIDS_DSP", name: "Data Science Principles", faculty: "Dr. D. J. Patil" },
+        { id: "AIDS_BDA", name: "Big Data Analytics", faculty: "Dr. Michael Stonebraker" },
+        { id: "AIDS_STAT", name: "Applied Statistics", faculty: "Prof. C. R. Rao" },
+        { id: "AIDS_PY", name: "Python for Data Science", faculty: "Prof. Guido van Rossum" },
+        { id: "AIDS_DBMS", name: "Database Management Systems", faculty: "Dr. E. F. Codd" },
+        { id: "AIDS_LA", name: "Linear Algebra", faculty: "Prof. Gilbert Strang" }
+      ],
+      CSE_CORE: [
+        { id: "CSE_OS", name: "Operating Systems", faculty: "Prof. Linus Torvalds" },
+        { id: "CSE_CN", name: "Computer Networks", faculty: "Prof. Andrew Tanenbaum" },
+        { id: "CSE_DAA", name: "Design & Analysis of Algorithms", faculty: "Dr. Robert Tarjan" },
+        { id: "CSE_OOP", name: "Object Oriented Programming (Java)", faculty: "Prof. James Gosling" },
+        { id: "CSE_TOC", name: "Theory of Computation", faculty: "Dr. Michael Sipser" },
+        { id: "CSE_CD", name: "Compiler Design", faculty: "Prof. Alfred Aho" }
+      ]
+    };
+
+    // SECTION MAPPINGS FOR ALL 11 SPECIFIED SECTIONS
+    function getBranchFromSection(sectionName) {
+      if (sectionName.startsWith("AIML")) return "AIML";
+      if (sectionName.startsWith("AIDS")) return "AIDS";
+      return "CSE_CORE";
+    }
+
+    // DEMO STUDENT PROFILES
+    const DEMO_USERS = {
+      harsha: {
+        name: "Harsha Vardhan",
+        section: "AIML B",
+        regNo: "RA2611003010452",
+        email: "harsha@college.edu.in",
+        pct: 68.8
+      },
+      rahul: {
+        name: "Rahul Sharma",
+        section: "AIDS C",
+        regNo: "RA2611003010189",
+        email: "rahul@college.edu.in",
+        pct: 74.2
+      },
+      sneha: {
+        name: "Sneha Reddy",
+        section: "CSE CORE A",
+        regNo: "RA2611003010994",
+        email: "sneha@college.edu.in",
+        pct: 93.5
+      }
+    };
+
+    // ACTIVE STATE
+    let currentUser = null;
+    let userSubjects = [];
+    let attendanceHistory = [];
+
+    // THEME ENGINE
+    function applyGlobalTheme(themeName) {
+      document.documentElement.setAttribute('data-theme', themeName);
+      if (themeName === 'neobrutal') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+      }
+      document.getElementById('login-theme-selector').value = themeName;
+      document.getElementById('dash-theme-selector').value = themeName;
+      localStorage.setItem('attendpulse_theme', themeName);
+      renderSemesterChart();
+    }
+
+    // AUDIO & VIBRATION WARNING ENGINE
+    function triggerAudioVibrationAlert() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(880, ctx.currentTime + 0.15);
+          osc.frequency.linearRampToValueAtTime(330, ctx.currentTime + 0.35);
+
+          gain.gain.setValueAtTime(0.25, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.4);
+        }
+      } catch (e) {}
+
+      if ("vibrate" in navigator) {
+        try { navigator.vibrate([200, 100, 200]); } catch (e) {}
+      }
+    }
+
+    // TOAST MESSAGES
+    function showToast(message, type = 'info') {
+      const shelf = document.getElementById('toast-shelf');
+      const toast = document.createElement('div');
+      const colors = {
+        success: 'bg-emerald-600 text-white',
+        danger: 'bg-rose-600 text-white',
+        warning: 'bg-amber-600 text-white',
+        info: 'bg-slate-800 text-white border border-white/20'
+      };
+      toast.className = `${colors[type] || colors.info} pointer-events-auto px-4 py-2.5 rounded-xl shadow-xl text-xs font-bold flex items-center gap-2 transform transition duration-300 translate-y-2 opacity-0`;
+      toast.innerHTML = `<span>${message}</span>`;
+      shelf.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // AUTH SWITCHING
+    function switchAuthTab(mode) {
+      const loginForm = document.getElementById('form-login');
+      const regForm = document.getElementById('form-register');
+      const tabLogin = document.getElementById('tab-login');
+      const tabReg = document.getElementById('tab-register');
+
+      if (mode === 'login') {
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+        tabLogin.style.borderColor = 'var(--primary)';
+        tabLogin.style.color = 'var(--primary)';
+        tabReg.style.borderColor = 'transparent';
+        tabReg.style.color = '#94A3B8';
+      } else {
+        loginForm.classList.add('hidden');
+        regForm.classList.remove('hidden');
+        tabReg.style.borderColor = 'var(--primary)';
+        tabReg.style.color = 'var(--primary)';
+        tabLogin.style.borderColor = 'transparent';
+        tabLogin.style.color = '#94A3B8';
+      }
+      lucide.createIcons();
+    }
+
+    // SEED ATTENDANCE RECORDS FOR DEMO OR NEW USERS
+    function generateHistoryRecords(subjects, targetPct, sectionName) {
+      const records = [];
+      const start = new Date("2026-08-31T09:00:00");
+      const end = new Date("2026-09-28T09:00:00");
+
+      let cur = new Date(start);
+      while (cur <= end) {
+        const day = cur.getDay(); // 1=Mon, 5=Fri
+        if (day >= 1 && day <= 5) {
+          const dateStr = cur.toISOString().split('T')[0];
+          subjects.forEach((sub, idx) => {
+            const isPresent = (Math.random() * 100) < targetPct;
+            records.push({
+              id: `${dateStr}_${sub.id}_${idx}`,
+              date: dateStr,
+              subjectId: sub.id,
+              subjectName: sub.name,
+              faculty: sub.faculty,
+              status: isPresent ? 'PRESENT' : 'ABSENT',
+              timestamp: `${dateStr} 0${9 + idx}:00 AM`
+            });
+          });
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      return records;
+    }
+
+    // 1-CLICK DEMO LOGIN
+    function quickDemoLogin(userKey) {
+      const demo = DEMO_USERS[userKey];
+      const branch = getBranchFromSection(demo.section);
+      const subjects = JSON.parse(JSON.stringify(BRANCH_CURRICULA[branch]));
+      const records = generateHistoryRecords(subjects, demo.pct, demo.section);
+
+      const user = {
+        name: demo.name,
+        section: demo.section,
+        regNo: demo.regNo,
+        email: demo.email
+      };
+
+      localStorage.setItem('attendpulse_user', JSON.stringify(user));
+      localStorage.setItem('attendpulse_subjects', JSON.stringify(subjects));
+      localStorage.setItem('attendpulse_history', JSON.stringify(records));
+
+      loadDashboard(user, subjects, records);
+      showToast(`Welcome, ${demo.name}! Loaded demo profile.`, 'success');
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      let user = JSON.parse(localStorage.getItem('attendpulse_user') || 'null');
+      let subjects = JSON.parse(localStorage.getItem('attendpulse_subjects') || 'null');
+      let records = JSON.parse(localStorage.getItem('attendpulse_history') || 'null');
+
+      if (!user || user.email !== email) {
+        user = {
+          name: email.split('@')[0].toUpperCase(),
+          section: "AIML B",
+          regNo: "RA26110" + Math.floor(100000 + Math.random() * 900000),
+          email: email
+        };
+        const branch = getBranchFromSection(user.section);
+        subjects = JSON.parse(JSON.stringify(BRANCH_CURRICULA[branch]));
+        records = generateHistoryRecords(subjects, 68.8, user.section);
+
+        localStorage.setItem('attendpulse_user', JSON.stringify(user));
+        localStorage.setItem('attendpulse_subjects', JSON.stringify(subjects));
+        localStorage.setItem('attendpulse_history', JSON.stringify(records));
+      }
+
+      loadDashboard(user, subjects, records);
+      showToast(`Logged in successfully!`, 'success');
+    }
+
+    function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value.trim();
+      const section = document.getElementById('reg-section').value;
+      const regNo = document.getElementById('reg-regno').value.trim().toUpperCase();
+      const email = document.getElementById('reg-email').value.trim();
+
+      const user = { name, section, regNo, email };
+      const branch = getBranchFromSection(section);
+      const subjects = JSON.parse(JSON.stringify(BRANCH_CURRICULA[branch]));
+      const records = generateHistoryRecords(subjects, 82.0, section);
+
+      localStorage.setItem('attendpulse_user', JSON.stringify(user));
+      localStorage.setItem('attendpulse_subjects', JSON.stringify(subjects));
+      localStorage.setItem('attendpulse_history', JSON.stringify(records));
+
+      loadDashboard(user, subjects, records);
+      showToast(`Welcome, ${name}! Your curriculum is ready.`, 'success');
+    }
+
+    function executeSignOut() {
+      localStorage.removeItem('attendpulse_user');
+      document.getElementById('auth-section').classList.remove('hidden');
+      document.getElementById('dashboard-section').classList.add('hidden');
+      showToast('Signed out successfully.');
+    }
+
+    // COUNT WORKDAYS & LECTURES (Mon-Fri, 5 slots daily)
+    function countClassesInInterval(startDate, endDate) {
+      let count = 0;
+      let cur = new Date(startDate);
+      while (cur <= endDate) {
+        const d = cur.getDay();
+        if (d >= 1 && d <= 5) {
+          count += 5;
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      return count;
+    }
+
+    // CORE MATHEMATICAL CALCULATIONS
+    function calculateFullMetrics(records, targetDateStr) {
+      const conducted = records.length;
+      const attended = records.filter(r => r.status === 'PRESENT').length;
+      const overallPct = conducted === 0 ? 100 : (attended / conducted) * 100;
+
+      const tomorrow = new Date("2026-09-29T00:00:00");
+      const targetDate = new Date(targetDateStr || "2026-11-29T23:59:59");
+      const remainingClasses = countClassesInInterval(tomorrow, targetDate);
+      const semesterEndRemaining = countClassesInInterval(tomorrow, SEMESTER_END);
+
+      // Formula for 75%
+      let classesNeeded75 = 0;
+      let safeBunks75 = 0;
+      if (overallPct < 75) {
+        classesNeeded75 = Math.max(0, Math.ceil((0.75 * conducted - attended) / (1 - 0.75)));
+      } else {
+        safeBunks75 = Math.max(0, Math.floor((attended / 0.75) - conducted));
+      }
+
+      // Formula for 90%
+      let classesNeeded90 = 0;
+      let safeBunks90 = 0;
+      if (overallPct < 90) {
+        classesNeeded90 = Math.max(0, Math.ceil((0.90 * conducted - attended) / (1 - 0.90)));
+      } else {
+        safeBunks90 = Math.max(0, Math.floor((attended / 0.90) - conducted));
+      }
+
+      // Maximum achievable attendance
+      const maxPossibleAttended = attended + semesterEndRemaining;
+      const maxPossibleConducted = conducted + semesterEndRemaining;
+      const maxAchievablePct = maxPossibleConducted === 0 ? 100 : ((maxPossibleAttended / maxPossibleConducted) * 100);
+      const isIrreversible = maxAchievablePct < 75;
+
+      return {
+        conducted,
+        attended,
+        overallPct,
+        remainingClasses,
+        semesterEndRemaining,
+        classesNeeded75,
+        safeBunks75,
+        classesNeeded90,
+        safeBunks90,
+        maxAchievablePct,
+        isIrreversible
+      };
+    }
+
+    // LOAD DASHBOARD
+    function loadDashboard(user, subjects, records) {
+      currentUser = user;
+      userSubjects = subjects || [];
+      attendanceHistory = records || [];
+
+      document.getElementById('auth-section').classList.add('hidden');
+      document.getElementById('dashboard-section').classList.remove('hidden');
+
+      // Populate User Labels
+      document.getElementById('nav-user-name').innerText = user.name;
+      document.getElementById('nav-user-regno').innerText = user.regNo;
+      document.getElementById('nav-section-badge').innerText = user.section;
+      document.getElementById('nav-avatar-initial').innerText = user.name.charAt(0).toUpperCase();
+      document.getElementById('calc-section-select').value = user.section;
+      document.getElementById('today-sec-badge').innerText = user.section;
+      document.getElementById('hero-welcome-title').innerText = `🔥 Let's crush this semester, ${user.name.split(' ')[0]}!`;
+
+      const targetDate = document.getElementById('calc-target-date').value;
+      const metrics = calculateFullMetrics(attendanceHistory, targetDate);
+
+      // Trigger Full-Screen Warning Modal if < 75%
+      if (metrics.overallPct < 75) {
+        openDangerModal(metrics.overallPct, metrics.isIrreversible);
+        document.getElementById('top-danger-banner').classList.remove('hidden');
+        document.getElementById('banner-att-pct').innerText = `${metrics.overallPct.toFixed(1)}%`;
+      } else {
+        document.getElementById('top-danger-banner').classList.add('hidden');
+      }
+
+      updateMetricCards(metrics);
+      runCalculator();
+      renderTodaySlots();
+      renderSubjectCards();
+      renderSemesterChart();
+      renderHistoryTable();
+
+      lucide.createIcons();
+    }
+
+    function openDangerModal(pct, isIrreversible) {
+      const modal = document.getElementById('danger-modal');
+      const box = document.getElementById('danger-modal-box');
+      const pctSpan = document.getElementById('modal-att-pct');
+      const irrBox = document.getElementById('modal-irr-alert');
+      const okBtn = document.getElementById('modal-ok-btn');
+
+      pctSpan.innerText = `${pct.toFixed(1)}%`;
+      if (isIrreversible) irrBox.classList.remove('hidden');
+      else irrBox.classList.add('hidden');
+
+      modal.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        box.classList.remove('scale-95', 'opacity-0');
+        box.classList.add('scale-100', 'opacity-100');
+      });
+
+      triggerAudioVibrationAlert();
+
+      okBtn.onclick = () => {
+        box.classList.add('scale-95', 'opacity-0');
+        box.classList.remove('scale-100', 'opacity-100');
+        setTimeout(() => modal.classList.add('hidden'), 250);
+      };
+    }
+
+    function updateMetricCards(metrics) {
+      document.getElementById('metric-overall-pct').innerText = `${metrics.overallPct.toFixed(1)}%`;
+      document.getElementById('metric-attended-classes').innerText = metrics.attended;
+      document.getElementById('metric-conducted-classes').innerText = metrics.conducted;
+      document.getElementById('svg-radial-label').innerText = `${Math.round(metrics.overallPct)}%`;
+
+      const radialBar = document.getElementById('svg-radial-bar');
+      radialBar.setAttribute('stroke-dasharray', `${Math.min(100, Math.max(0, metrics.overallPct))}, 100`);
+
+      const statusBadge = document.getElementById('metric-status-badge');
+      const heroPill = document.getElementById('hero-compliance-pill');
+
+      if (metrics.overallPct >= 90) {
+        statusBadge.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        statusBadge.innerText = "Honors Safe (>90%)";
+        radialBar.setAttribute('class', 'text-emerald-400 stroke-current transition-all duration-700');
+        heroPill.innerText = "✓ Examination Permitted (High Merit)";
+        heroPill.className = "px-2.5 py-1 rounded-lg font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+      } else if (metrics.overallPct >= 75) {
+        statusBadge.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30";
+        statusBadge.innerText = "Compliant (75-90%)";
+        radialBar.setAttribute('class', 'text-cyan-400 stroke-current transition-all duration-700');
+        heroPill.innerText = "✓ Compliant with Minimum 75%";
+        heroPill.className = "px-2.5 py-1 rounded-lg font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30";
+      } else {
+        statusBadge.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse";
+        statusBadge.innerText = "Detention Risk (<75%)";
+        radialBar.setAttribute('class', 'text-rose-500 stroke-current transition-all duration-700');
+        heroPill.innerText = "⚠️ Shortage Warning: < 75%";
+        heroPill.className = "px-2.5 py-1 rounded-lg font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse";
+      }
+
+      // 75% Target card
+      const heading75 = document.getElementById('metric-75-heading');
+      const val75 = document.getElementById('metric-75-value');
+      const units75 = document.getElementById('metric-75-units');
+      const desc75 = document.getElementById('metric-75-desc');
+
+      if (metrics.overallPct >= 75) {
+        heading75.innerText = "Safe Bunks Cushion";
+        val75.innerText = metrics.safeBunks75;
+        val75.className = "text-3xl font-black text-emerald-400";
+        units75.innerText = "can skip safely";
+        desc75.innerText = "Without falling below 75%";
+      } else {
+        heading75.innerText = "75% Recovery Target";
+        val75.innerText = metrics.classesNeeded75;
+        val75.className = "text-3xl font-black text-rose-400";
+        units75.innerText = "classes required";
+        desc75.innerText = "Consecutive attendance needed";
+      }
+
+      // 90% Target card
+      const val90 = document.getElementById('metric-90-value');
+      const desc90 = document.getElementById('metric-90-desc');
+      if (metrics.overallPct >= 90) {
+        val90.innerText = metrics.safeBunks90;
+        val90.className = "text-3xl font-black text-emerald-400";
+        desc90.innerText = "Safe bunks above 90% honors";
+      } else {
+        val90.innerText = metrics.classesNeeded90;
+        val90.className = "text-3xl font-black";
+        desc90.innerText = "Consecutive classes to hit 90%";
+      }
+    }
+
+    function runCalculator() {
+      const section = document.getElementById('calc-section-select').value;
+      const targetDate = document.getElementById('calc-target-date').value;
+      const metrics = calculateFullMetrics(attendanceHistory, targetDate);
+
+      document.getElementById('calc-out-remaining').innerText = metrics.remainingClasses;
+      const targetObj = new Date(targetDate);
+      document.getElementById('calc-out-remaining-desc').innerText = `Between Sep 28 and ${targetObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+
+      const badge75 = document.getElementById('calc-out-75-badge');
+      const num75 = document.getElementById('calc-out-75-num');
+      const sub75 = document.getElementById('calc-out-75-sub');
+      const info75 = document.getElementById('calc-out-75-info');
+
+      if (metrics.overallPct >= 75) {
+        badge75.className = "px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        badge75.innerText = "Safe Cushion";
+        num75.innerText = metrics.safeBunks75;
+        num75.className = "text-4xl font-black text-emerald-400";
+        sub75.innerText = "bunks allowed";
+        info75.innerHTML = `You can skip up to <strong>${metrics.safeBunks75} classes</strong> and still stay above 75%.`;
+      } else {
+        badge75.className = "px-2 py-0.5 rounded text-[10px] font-black uppercase bg-rose-500/20 text-rose-400 border border-rose-500/40";
+        badge75.innerText = "Recovery Needed";
+        num75.innerText = metrics.classesNeeded75;
+        num75.className = "text-4xl font-black text-rose-400";
+        sub75.innerText = "needed straight";
+        info75.innerHTML = `Attend next <strong>${metrics.classesNeeded75} classes</strong> consecutively to cross 75%.`;
+      }
+
+      // 90%
+      document.getElementById('calc-out-90-num').innerText = metrics.overallPct >= 90 ? metrics.safeBunks90 : metrics.classesNeeded90;
+      document.getElementById('calc-out-90-info').innerText = metrics.overallPct >= 90 ? "Cushion classes before falling below 90%." : "Consecutive classes to achieve honors merit (>90%).";
+
+      // Irreversible alert
+      const irrBox = document.getElementById('calc-irr-warning');
+      if (metrics.isIrreversible) {
+        irrBox.classList.remove('hidden');
+        document.getElementById('irr-classes-left').innerText = metrics.semesterEndRemaining;
+        document.getElementById('irr-max-pct').innerText = `${metrics.maxAchievablePct.toFixed(1)}%`;
+      } else {
+        irrBox.classList.add('hidden');
+      }
+    }
+
+    function handleSectionChange(newSection) {
+      if (!currentUser) return;
+      currentUser.section = newSection;
+      localStorage.setItem('attendpulse_user', JSON.stringify(currentUser));
+
+      const branch = getBranchFromSection(newSection);
+      userSubjects = JSON.parse(JSON.stringify(BRANCH_CURRICULA[branch]));
+      localStorage.setItem('attendpulse_subjects', JSON.stringify(userSubjects));
+
+      attendanceHistory = generateHistoryRecords(userSubjects, 78.0, newSection);
+      localStorage.setItem('attendpulse_history', JSON.stringify(attendanceHistory));
+
+      document.getElementById('nav-section-badge').innerText = newSection;
+      document.getElementById('today-sec-badge').innerText = newSection;
+
+      const metrics = calculateFullMetrics(attendanceHistory, document.getElementById('calc-target-date').value);
+      updateMetricCards(metrics);
+      runCalculator();
+      renderTodaySlots();
+      renderSubjectCards();
+      renderSemesterChart();
+      renderHistoryTable();
+
+      showToast(`Switched curriculum to ${newSection}`, 'info');
+      lucide.createIcons();
+    }
+
+    // RENDER TODAY'S CLASS CHECK-IN (ONE-TAP)
+    function renderTodaySlots() {
+      const grid = document.getElementById('today-grid');
+      grid.innerHTML = '';
+      const todayStr = "2026-09-28";
+
+      // 5 slots for Monday
+      const slots = userSubjects.slice(0, 5);
+      let markedCount = 0;
+
+      slots.forEach((sub, idx) => {
+        const existing = attendanceHistory.find(r => r.date === todayStr && (r.subjectId === sub.id || r.subjectName === sub.name));
+        if (existing) markedCount++;
+
+        const isPresent = existing && existing.status === 'PRESENT';
+        const isAbsent = existing && existing.status === 'ABSENT';
+
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-2xl theme-card flex flex-col justify-between ${
+          isPresent ? 'border-emerald-500/50' : isAbsent ? 'border-rose-500/50' : ''
+        }`;
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 text-slate-400">
+                Slot ${idx + 1} • 0${9 + idx}:00 AM
+              </span>
+              ${isPresent ? '<span class="text-[10px] font-bold text-emerald-400">✓ Present</span>' : ''}
+              ${isAbsent ? '<span class="text-[10px] font-bold text-rose-400">✗ Absent</span>' : ''}
+            </div>
+            <h4 class="font-black text-xs truncate" title="${sub.name}">${sub.name}</h4>
+            <p class="text-[11px] text-slate-400 truncate mb-3">${sub.faculty}</p>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mt-2">
+            <button onclick="markTodayClass('${sub.id}', '${sub.name}', '${sub.faculty}', 'PRESENT', ${idx})" class="py-1.5 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 ${
+              isPresent ? 'bg-emerald-500 text-black' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+            }">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Present</span>
+            </button>
+            <button onclick="markTodayClass('${sub.id}', '${sub.name}', '${sub.faculty}', 'ABSENT', ${idx})" class="py-1.5 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 ${
+              isAbsent ? 'bg-rose-500 text-white' : 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20'
+            }">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              <span>Absent</span>
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      document.getElementById('metric-today-marked').innerText = markedCount;
+      document.getElementById('metric-today-total').innerText = slots.length;
+      lucide.createIcons();
+    }
+
+    function markTodayClass(subId, subName, faculty, status, slotIdx) {
+      const todayStr = "2026-09-28";
+      const timestamp = `${todayStr} 0${9 + slotIdx}:02 AM`;
+
+      const idx = attendanceHistory.findIndex(r => r.date === todayStr && (r.subjectId === subId || r.subjectName === subName));
+      if (idx >= 0) {
+        attendanceHistory[idx].status = status;
+        attendanceHistory[idx].timestamp = timestamp;
+      } else {
+        attendanceHistory.unshift({
+          id: `${todayStr}_${subId}_${slotIdx}`,
+          date: todayStr,
+          subjectId: subId,
+          subjectName: subName,
+          faculty: faculty,
+          status: status,
+          timestamp: timestamp
+        });
+      }
+
+      localStorage.setItem('attendpulse_history', JSON.stringify(attendanceHistory));
+
+      const metrics = calculateFullMetrics(attendanceHistory, document.getElementById('calc-target-date').value);
+      updateMetricCards(metrics);
+      runCalculator();
+      renderTodaySlots();
+      renderSubjectCards();
+      renderSemesterChart();
+      renderHistoryTable();
+
+      showToast(`Marked ${subName} as ${status}`, status === 'PRESENT' ? 'success' : 'danger');
+    }
+
+    // SUBJECT CARDS (UNLIMITED & DYNAMIC)
+    function renderSubjectCards() {
+      const container = document.getElementById('subjects-container');
+      container.innerHTML = '';
+
+      userSubjects.forEach((sub, sIdx) => {
+        const subRecords = attendanceHistory.filter(r => r.subjectId === sub.id || r.subjectName === sub.name);
+        const conducted = subRecords.length;
+        const attended = subRecords.filter(r => r.status === 'PRESENT').length;
+        const pct = conducted === 0 ? 100 : (attended / conducted) * 100;
+
+        let advice = '';
+        if (pct >= 75) {
+          const safe = Math.floor((attended / 0.75) - conducted);
+          advice = `<span class="text-emerald-400 font-bold">Can skip ${safe} classes safely.</span>`;
+        } else {
+          const need = Math.ceil((0.75 * conducted - attended) / 0.25);
+          advice = `<span class="text-rose-400 font-bold">Must attend next ${need} lectures straight!</span>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = "theme-card p-4 flex flex-col justify-between";
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 text-cyan-400 font-bold">
+                ${sub.id || 'COURSE'}
+              </span>
+              <div class="flex items-center gap-1.5">
+                <button onclick="quickIncrement(${sIdx}, true)" title="Add 1 Present Class" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold hover:bg-emerald-500/30">
+                  +P
+                </button>
+                <button onclick="quickIncrement(${sIdx}, false)" title="Add 1 Absent Class" class="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 text-[10px] font-bold hover:bg-rose-500/30">
+                  +A
+                </button>
+                <button onclick="deleteSubject(${sIdx})" title="Delete Subject" class="p-1 text-slate-500 hover:text-rose-400">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <h4 class="font-black text-sm truncate">${sub.name}</h4>
+            <p class="text-[11px] text-slate-400 truncate mb-3">${sub.faculty}</p>
+
+            <div class="flex items-baseline justify-between mb-1.5">
+              <span class="text-xs font-mono text-slate-300">${attended} / ${conducted} attended</span>
+              <span class="text-base font-black ${pct < 75 ? 'text-rose-400' : 'text-emerald-400'} font-mono">
+                ${pct.toFixed(1)}%
+              </span>
+            </div>
+
+            <!-- Progress Bar with 75% tick mark -->
+            <div class="w-full bg-black/60 h-2.5 rounded-full overflow-hidden relative border border-white/5">
+              <div class="absolute top-0 bottom-0 left-[75%] w-0.5 bg-slate-400 z-10" title="75% Regulatory Threshold"></div>
+              <div class="${pct < 75 ? 'bg-rose-500' : 'bg-emerald-400'} h-full rounded-full transition-all duration-500" style="width: ${Math.min(100, pct)}%"></div>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-2 border-t border-white/10 text-[11px]">
+            ${advice}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    function quickIncrement(sIdx, isPresent) {
+      const sub = userSubjects[sIdx];
+      const todayStr = "2026-09-28";
+      const timestamp = `${todayStr} 05:00 PM`;
+
+      attendanceHistory.push({
+        id: `extra_${Date.now()}_${Math.random()}`,
+        date: todayStr,
+        subjectId: sub.id,
+        subjectName: sub.name,
+        faculty: sub.faculty,
+        status: isPresent ? 'PRESENT' : 'ABSENT',
+        timestamp: timestamp
+      });
+
+      localStorage.setItem('attendpulse_history', JSON.stringify(attendanceHistory));
+
+      const metrics = calculateFullMetrics(attendanceHistory, document.getElementById('calc-target-date').value);
+      updateMetricCards(metrics);
+      runCalculator();
+      renderSubjectCards();
+      renderSemesterChart();
+      renderHistoryTable();
+
+      showToast(`Added 1 ${isPresent ? 'Present' : 'Absent'} for ${sub.name}`, 'info');
+    }
+
+    function deleteSubject(sIdx) {
+      if (userSubjects.length <= 1) {
+        showToast("You must maintain at least one course subject.", "warning");
+        return;
+      }
+      const removed = userSubjects.splice(sIdx, 1)[0];
+      localStorage.setItem('attendpulse_subjects', JSON.stringify(userSubjects));
+      renderSubjectCards();
+      showToast(`Removed course ${removed.name}`);
+    }
+
+    // MODAL: ADD CUSTOM SUBJECT (UNLIMITED)
+    function openAddSubjectModal() {
+      document.getElementById('add-subject-modal').classList.remove('hidden');
+    }
+    function closeAddSubjectModal() {
+      document.getElementById('add-subject-modal').classList.add('hidden');
+    }
+
+    function handleAddSubjectSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('cust-name').value.trim();
+      const faculty = document.getElementById('cust-faculty').value.trim();
+      const attended = parseInt(document.getElementById('cust-attended').value) || 0;
+      const total = parseInt(document.getElementById('cust-total').value) || 1;
+
+      if (attended > total) {
+        showToast("Attended classes cannot exceed total classes.", "warning");
+        return;
+      }
+
+      const id = "CUST_" + name.substring(0, 4).toUpperCase();
+      const newSub = { id, name, faculty };
+      userSubjects.push(newSub);
+      localStorage.setItem('attendpulse_subjects', JSON.stringify(userSubjects));
+
+      // Seed records for newly added custom subject
+      for (let i = 0; i < total; i++) {
+        attendanceHistory.push({
+          id: `seed_${id}_${i}`,
+          date: "2026-09-15",
+          subjectId: id,
+          subjectName: name,
+          faculty: faculty,
+          status: i < attended ? 'PRESENT' : 'ABSENT',
+          timestamp: `2026-09-15 10:00 AM`
+        });
+      }
+      localStorage.setItem('attendpulse_history', JSON.stringify(attendanceHistory));
+
+      closeAddSubjectModal();
+      document.getElementById('form-add-subject').reset();
+
+      const metrics = calculateFullMetrics(attendanceHistory, document.getElementById('calc-target-date').value);
+      updateMetricCards(metrics);
+      runCalculator();
+      renderSubjectCards();
+      renderSemesterChart();
+      renderHistoryTable();
+
+      showToast(`Subject "${name}" added successfully!`, 'success');
+    }
+
+    // CANVAS SEMESTER ATTENDANCE TREND
+    function renderSemesterChart() {
+      const canvas = document.getElementById('semesterChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const aug = attendanceHistory.filter(r => r.date.startsWith("2026-08"));
+      const sep = attendanceHistory.filter(r => r.date.startsWith("2026-09"));
+
+      const getPct = (list) => {
+        if (!list || list.length === 0) return 75;
+        const pres = list.filter(r => r.status === 'PRESENT').length;
+        return (pres / list.length) * 100;
+      };
+
+      const augPct = getPct(aug);
+      const sepPct = getPct(sep);
+      const octPct = Math.min(100, Math.max(62, sepPct + 5.5));
+      const novPct = Math.min(100, Math.max(76, octPct + 3.5));
+
+      document.getElementById('stat-aug').innerText = `${Math.round(augPct)}%`;
+      document.getElementById('stat-sep').innerText = `${Math.round(sepPct)}%`;
+      document.getElementById('stat-oct').innerText = `${Math.round(octPct)}%`;
+      document.getElementById('stat-nov').innerText = `${Math.round(novPct)}%`;
+
+      const data = [
+        { label: "Aug", pct: augPct },
+        { label: "Sep", pct: sepPct },
+        { label: "Oct", pct: octPct },
+        { label: "Nov", pct: novPct }
+      ];
+
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw 75% red line
+      const y75 = height - (75 / 100) * (height - 30) - 15;
+      ctx.strokeStyle = '#F43F5E';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(30, y75);
+      ctx.lineTo(width - 10, y75);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#F43F5E';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('75% Req', 5, y75 + 3);
+
+      const step = (width - 60) / (data.length - 1);
+      const points = data.map((d, i) => ({
+        x: 40 + i * step,
+        y: height - (d.pct / 100) * (height - 35) - 15,
+        pct: d.pct
+      }));
+
+      // Line
+      ctx.strokeStyle = '#06B6D4';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+      ctx.stroke();
+
+      // Points
+      points.forEach(p => {
+        ctx.fillStyle = p.pct < 75 ? '#F43F5E' : '#10B981';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+    }
+
+    // AUDIT LOG & HISTORY TABLE
+    function renderHistoryTable() {
+      const tbody = document.getElementById('history-rows');
+      const search = (document.getElementById('history-search')?.value || '').toLowerCase();
+      const statusFilter = document.getElementById('history-status-filter')?.value || 'ALL';
+
+      tbody.innerHTML = '';
+
+      const filtered = attendanceHistory.filter(r => {
+        const matchSearch = (r.subjectName || '').toLowerCase().includes(search) || (r.faculty || '').toLowerCase().includes(search);
+        const matchStatus = statusFilter === 'ALL' || r.status === statusFilter;
+        return matchSearch && matchStatus;
+      });
+
+      filtered.slice(0, 35).forEach(rec => {
+        const isPresent = rec.status === 'PRESENT';
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/5 transition";
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 font-mono text-slate-400">${rec.date}</td>
+          <td class="py-2.5 px-4 font-bold">${rec.subjectName}</td>
+          <td class="py-2.5 px-4 text-slate-400">${rec.faculty}</td>
+          <td class="py-2.5 px-4 font-mono text-slate-400 text-[11px]">${rec.timestamp}</td>
+          <td class="py-2.5 px-4 text-center">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              isPresent ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+            }">
+              ${rec.status}
+            </span>
+          </td>
+          <td class="py-2.5 px-4 text-right">
+            <button onclick="toggleRecordStatus('${rec.id}')" class="text-xs font-bold text-cyan-400 hover:underline">
+              Toggle
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleRecordStatus(recordId) {
+      const idx = attendanceHistory.findIndex(r => r.id === recordId);
+      if (idx >= 0) {
+        attendanceHistory[idx].status = attendanceHistory[idx].status === 'PRESENT' ? 'ABSENT' : 'PRESENT';
+        localStorage.setItem('attendpulse_history', JSON.stringify(attendanceHistory));
+
+        const metrics = calculateFullMetrics(attendanceHistory, document.getElementById('calc-target-date').value);
+        updateMetricCards(metrics);
+        runCalculator();
+        renderTodaySlots();
+        renderSubjectCards();
+        renderSemesterChart();
+        renderHistoryTable();
+
+        showToast('Record toggled', 'info');
+      }
+    }
+
+    function scrollToCalculator() {
+      document.getElementById('calculator-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ONLOAD ENGINE BOOTSTRAP
+    window.onload = function() {
+      const savedTheme = localStorage.getItem('attendpulse_theme') || 'aurora';
+      applyGlobalTheme(savedTheme);
+
+      const savedUser = JSON.parse(localStorage.getItem('attendpulse_user') || 'null');
+      if (savedUser) {
+        const branch = getBranchFromSection(savedUser.section);
+        const savedSubjects = JSON.parse(localStorage.getItem('attendpulse_subjects') || 'null') || JSON.parse(JSON.stringify(BRANCH_CURRICULA[branch]));
+        const savedHistory = JSON.parse(localStorage.getItem('attendpulse_history') || 'null') || generateHistoryRecords(savedSubjects, 68.8, savedUser.section);
+        loadDashboard(savedUser, savedSubjects, savedHistory);
+      } else {
+        document.getElementById('login-email').value = "harsha@college.edu.in";
+        document.getElementById('login-password').value = "password123";
+      }
+
+      window.addEventListener('resize', () => {
+        if (!document.getElementById('dashboard-section').classList.contains('hidden')) {
+          renderSemesterChart();
+        }
+      });
+
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>
