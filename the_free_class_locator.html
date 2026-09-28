@@ -1,0 +1,2227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Free Class Locator | 3D Map, Live Countdown & Squad Share - SRMIST</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Google Fonts: Cinzel & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Three.js CDN and OrbitControls for 3D Building Digital Twin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  
+  <!-- Tone.js for royal audio feedback -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['Cinzel', 'serif']
+          },
+          colors: {
+            regal: {
+              obsidian: '#050a17',
+              midnight: '#0a142c',
+              navy: '#0f1d40',
+              royalBlue: '#16285a',
+              gold: '#d4af37',
+              goldLight: '#f7ecc9',
+              goldDark: '#b89128',
+              goldMuted: 'rgba(212, 175, 55, 0.22)',
+              champagne: '#faeec8',
+              crimson: '#e11d48',
+              emerald: '#10b981',
+              amber: '#f59e0b'
+            }
+          },
+          boxShadow: {
+            'royal-gold': '0 0 30px -4px rgba(212, 175, 55, 0.35)',
+            'royal-card': '0 16px 40px -8px rgba(0, 4, 15, 0.85), 0 0 1px 1px rgba(212, 175, 55, 0.2)',
+            'emerald-glow': '0 0 25px rgba(16, 185, 129, 0.4)',
+            'ruby-glow': '0 0 25px rgba(225, 29, 72, 0.4)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Regal Custom Scrollbars */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: #050a17; }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+
+    body {
+      background-color: #050a17;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(212, 175, 55, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 90%, rgba(22, 40, 90, 0.5) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(10, 20, 44, 0.95) 0%, #050a17 100%);
+      background-attachment: fixed;
+    }
+
+    .imperial-card {
+      background: linear-gradient(135deg, rgba(15, 29, 64, 0.85) 0%, rgba(10, 20, 44, 0.95) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .imperial-card:hover {
+      border-color: rgba(212, 175, 55, 0.6);
+      box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.8), 0 0 24px rgba(212, 175, 55, 0.2);
+    }
+
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #faeec8 0%, #d4af37 50%, #b89128 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gold-btn {
+      background: linear-gradient(135deg, #d4af37 0%, #b89128 100%);
+      color: #050a17;
+      font-weight: 700;
+      transition: all 0.25s ease;
+    }
+    .gold-btn:hover {
+      background: linear-gradient(135deg, #faeec8 0%, #d4af37 100%);
+      box-shadow: 0 0 22px rgba(212, 175, 55, 0.5);
+      transform: translateY(-1px);
+    }
+
+    /* 3D Canvas Container */
+    #canvas3d-container {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      touch-action: none;
+    }
+
+    /* Pulse animation for live indicators */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .live-pulse { animation: pulse-ring 2s infinite ease-in-out; }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col font-sans selection:bg-regal-gold selection:text-regal-obsidian">
+
+  <header class="border-b border-regal-gold/25 bg-regal-obsidian/90 backdrop-blur-xl sticky top-0 z-40 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand & University Crest Motif -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-regal-goldDark via-regal-gold to-regal-champagne p-[2px] shadow-royal-gold">
+          <div class="w-full h-full bg-regal-obsidian rounded-[14px] flex items-center justify-center">
+            <i class="fa-solid fa-crown text-regal-gold text-xl drop-shadow"></i>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="font-serif font-extrabold text-xl sm:text-2xl tracking-wide gold-gradient-text">
+              SRM<span class="text-slate-100 font-sans font-light">IST</span>
+            </h1>
+            <span class="font-serif text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-regal-gold/15 border border-regal-gold/40 text-regal-gold font-bold tracking-widest uppercase">
+              Tiruchirappalli
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 tracking-wider uppercase font-medium">SEEE Free Class Locator • 3D Digital Twin & Squad Share</p>
+        </div>
+      </div>
+
+      <!-- Live Master Clock & Quick Mode Toggles -->
+      <div class="flex items-center gap-3">
+        <!-- Live Real-World IST Clock -->
+        <div class="hidden sm:flex flex-col items-end px-3.5 py-1.5 rounded-xl bg-regal-navy/80 border border-regal-gold/30">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span id="headerLiveClock" class="font-mono font-bold text-xs text-regal-champagne">--:--:--</span>
+          </div>
+          <span id="headerLivePeriod" class="text-[10px] text-regal-gold font-semibold uppercase tracking-wider">Syncing Period...</span>
+        </div>
+
+        <!-- Space Analytics Modal Trigger -->
+        <button id="btnOverviewMetrics" class="px-3.5 py-2 rounded-xl bg-regal-navy/90 hover:bg-regal-royalBlue border border-regal-gold/40 text-regal-gold text-xs font-bold flex items-center gap-2 transition-all shadow-sm">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span class="hidden md:inline">Analytics</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Top Command Hub: AI Concierge & Natural Language Search -->
+    <section class="imperial-card rounded-3xl p-5 sm:p-7 border border-regal-gold/30 shadow-royal-card relative overflow-hidden">
+      <div class="absolute -right-16 -top-16 w-80 h-80 bg-regal-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 max-w-4xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-regal-gold/15 border border-regal-gold/40 text-regal-gold text-xs font-bold uppercase tracking-wider mb-2.5">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> AI Space Concierge
+        </div>
+        <h2 class="text-xl sm:text-3xl font-serif font-extrabold text-white tracking-wide">
+          Find Your Free Classroom. <span class="gold-gradient-text">Sit Undisturbed.</span>
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-300 mt-1 mb-4 leading-relaxed">
+          Real-time intelligence across 10 official SRM FET timetables. Discover quiet lecture rooms, see precise live countdowns, and summon your squad before someone else takes the room.
+        </p>
+
+        <!-- NLP Smart Search Bar -->
+        <div class="relative w-full group">
+          <div class="relative flex items-center">
+            <span class="absolute left-4 text-regal-gold text-lg">
+              <i class="fa-solid fa-magnifying-glass-location"></i>
+            </span>
+            <input 
+              type="text" 
+              id="aiSearchInput" 
+              placeholder='e.g. "I need an AC room on the 5th floor for 2 hours for my squad"'
+              class="w-full pl-12 pr-28 sm:pr-32 py-3.5 sm:py-4 bg-regal-obsidian/95 border-2 border-regal-gold/30 group-hover:border-regal-gold/60 focus:border-regal-gold rounded-2xl text-slate-100 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-4 focus:ring-regal-gold/15 shadow-inner transition-all"
+            />
+            <button 
+              id="btnRunAiSearch" 
+              class="absolute right-2 px-4 sm:px-6 py-2 sm:py-2.5 gold-btn text-xs sm:text-sm rounded-xl font-bold tracking-wide flex items-center gap-1.5 cursor-pointer shadow-md"
+            >
+              <span>Search</span>
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick 1-Click NLP Presets -->
+        <div class="mt-3.5 pt-3 border-t border-regal-gold/20 flex flex-wrap items-center gap-2 text-xs">
+          <span class="text-regal-champagne font-semibold mr-1 flex items-center gap-1">
+            <i class="fa-solid fa-bolt text-regal-gold text-[11px]"></i> Fast Presets:
+          </span>
+          <button class="instant-preset-btn px-2.5 py-1.5 rounded-lg bg-regal-navy/80 hover:bg-regal-royalBlue border border-regal-gold/30 text-slate-200 transition-all hover:border-regal-gold text-[11px] flex items-center gap-1.5" data-prompt="Find an AC room right now for 2 hours">
+            <i class="fa-solid fa-snowflake text-cyan-400 text-[10px]"></i> AC Room (2h)
+          </button>
+          <button class="instant-preset-btn px-2.5 py-1.5 rounded-lg bg-regal-navy/80 hover:bg-regal-royalBlue border border-regal-gold/30 text-slate-200 transition-all hover:border-regal-gold text-[11px] flex items-center gap-1.5" data-prompt="Need classroom on 5th or 6th floor with smart board">
+            <i class="fa-solid fa-tv text-regal-gold text-[10px]"></i> 5th/6th Floor Smart Board
+          </button>
+          <button class="instant-preset-btn px-2.5 py-1.5 rounded-lg bg-regal-navy/80 hover:bg-regal-royalBlue border border-regal-gold/30 text-slate-200 transition-all hover:border-regal-gold text-[11px] flex items-center gap-1.5" data-prompt="Free lab or classroom on ground floor">
+            <i class="fa-solid fa-laptop-code text-regal-gold text-[10px]"></i> Ground Floor Free Room
+          </button>
+          <button class="instant-preset-btn px-2.5 py-1.5 rounded-lg bg-regal-navy/80 hover:bg-regal-royalBlue border border-regal-gold/30 text-slate-200 transition-all hover:border-regal-gold text-[11px] flex items-center gap-1.5" data-prompt="Quiet room for project group on 2nd floor">
+            <i class="fa-solid fa-users text-emerald-400 text-[10px]"></i> 2nd Floor Project Hub
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI Search Results Banner -->
+    <section id="aiResultsSection" class="hidden rounded-3xl p-5 border-2 border-regal-gold/50 bg-regal-navy/85 backdrop-blur-xl shadow-royal-card space-y-4">
+      <div class="flex items-center justify-between border-b border-regal-gold/20 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-regal-gold/20 border border-regal-gold/50 flex items-center justify-center text-regal-gold">
+            <i class="fa-solid fa-gem text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-serif font-bold text-base sm:text-lg text-white">AI Concierge Matched Sanctuaries</h3>
+            <p id="aiQueryFeedback" class="text-xs text-regal-champagne">Analyzing...</p>
+          </div>
+        </div>
+        <button id="btnCloseAiResults" class="w-8 h-8 rounded-lg bg-regal-obsidian border border-regal-gold/30 text-slate-400 hover:text-regal-gold flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div id="aiRecommendationsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <section class="imperial-card rounded-3xl p-5 border border-regal-gold/25 space-y-4 shadow-royal-card">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        
+        <!-- Day Selector Controls -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-serif font-bold text-regal-gold uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar-days"></i> Day:
+            </label>
+            <div class="inline-flex rounded-xl bg-regal-obsidian p-1 border border-regal-gold/30" id="dayButtons">
+              <button class="day-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-all gold-btn shadow" data-day="Mon">Mon</button>
+              <button class="day-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-300 hover:text-regal-gold" data-day="Tue">Tue</button>
+              <button class="day-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-300 hover:text-regal-gold" data-day="Wed">Wed</button>
+              <button class="day-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-300 hover:text-regal-gold" data-day="Thu">Thu</button>
+              <button class="day-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-300 hover:text-regal-gold" data-day="Fri">Fri</button>
+            </div>
+          </div>
+
+          <!-- Period Selector Dropdown -->
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-serif font-bold text-regal-gold uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-regular fa-clock"></i> Period:
+            </label>
+            <select id="periodSelector" class="bg-regal-obsidian border border-regal-gold/30 text-regal-champagne text-xs sm:text-sm font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-regal-gold">
+              <option value="1">P1 (09:00 - 09:50 AM)</option>
+              <option value="2">P2 (09:55 - 10:45 AM)</option>
+              <option value="3">P3 (10:50 - 11:40 AM)</option>
+              <option value="4">P4 (11:45 - 12:35 PM)</option>
+              <option value="5">Lunch (12:35 - 01:30 PM)</option>
+              <option value="6">P6 (01:30 - 02:20 PM)</option>
+              <option value="7" selected>P7 (02:25 - 03:15 PM)</option>
+              <option value="8">P8 (03:20 - 04:10 PM)</option>
+              <option value="9">P9 (04:15 - 05:05 PM)</option>
+            </select>
+          </div>
+
+          <!-- Synchronize IST button -->
+          <button id="btnSyncCurrentTime" class="px-3 py-2 rounded-xl bg-emerald-950/70 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/60 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm" title="Synchronize to real-world live college clock">
+            <i class="fa-solid fa-satellite-dish text-emerald-400"></i>
+            <span>Live Sync</span>
+          </button>
+        </div>
+
+        <!-- View Switcher Tabs: 3D Model vs Tactical Grid -->
+        <div class="flex items-center gap-2 self-start lg:self-center">
+          <div class="inline-flex rounded-2xl bg-regal-obsidian p-1 border border-regal-gold/30">
+            <button id="viewToggle3D" class="px-4 py-2 rounded-xl gold-btn text-xs font-bold flex items-center gap-2 transition-all shadow-sm">
+              <i class="fa-solid fa-cube text-xs"></i>
+              <span>3D Building Map</span>
+            </button>
+            <button id="viewToggleGrid" class="px-4 py-2 rounded-xl text-slate-300 hover:text-regal-gold text-xs font-semibold flex items-center gap-2 transition-all">
+              <i class="fa-solid fa-table-cells-large text-xs"></i>
+              <span>Tactical Grid</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Floor navigation & status indicators -->
+      <div class="pt-3 border-t border-regal-gold/20 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-1.5 text-xs" id="floorPills">
+          <span class="font-serif font-bold text-regal-gold mr-1 uppercase tracking-wider text-[11px]">Floors:</span>
+          <button class="floor-pill active px-3 py-1 rounded-full gold-btn font-bold flex items-center gap-1.5 transition-all shadow-sm" data-floor="ALL">
+            <span>All</span>
+            <span class="free-badge text-[10px] px-1.5 py-0.2 bg-regal-obsidian text-regal-gold rounded-full font-bold" id="badge-count-ALL">-</span>
+          </button>
+          <button class="floor-pill px-3 py-1 rounded-full bg-regal-obsidian border border-regal-gold/30 text-slate-300 hover:text-white font-medium flex items-center gap-1.5 transition-all" data-floor="GF">
+            <span>GF & 1F</span>
+            <span class="free-badge text-[10px] px-1.5 py-0.2 bg-regal-navy text-slate-300 rounded-full" id="badge-count-GF">-</span>
+          </button>
+          <button class="floor-pill px-3 py-1 rounded-full bg-regal-obsidian border border-regal-gold/30 text-slate-300 hover:text-white font-medium flex items-center gap-1.5 transition-all" data-floor="2F">
+            <span>2nd</span>
+            <span class="free-badge text-[10px] px-1.5 py-0.2 bg-regal-navy text-slate-300 rounded-full" id="badge-count-2F">-</span>
+          </button>
+          <button class="floor-pill px-3 py-1 rounded-full bg-regal-obsidian border border-regal-gold/30 text-slate-300 hover:text-white font-medium flex items-center gap-1.5 transition-all" data-floor="4F">
+            <span>4th</span>
+            <span class="free-badge text-[10px] px-1.5 py-0.2 bg-regal-navy text-slate-300 rounded-full" id="badge-count-4F">-</span>
+          </button>
+          <button class="floor-pill px-3 py-1 rounded-full bg-regal-obsidian border border-regal-gold/30 text-slate-300 hover:text-white font-medium flex items-center gap-1.5 transition-all" data-floor="5F">
+            <span>5th</span>
+            <span class="free-badge text-[10px] px-1.5 py-0.2 bg-regal-navy text-slate-300 rounded-full" id="badge-count-5F">-</span>
+          </button>
+          <button class="floor-pill px-3 py-1 rounded-full bg-regal-obsidian border border-regal-gold/30 text-slate-300 hover:text-white font-medium flex items-center gap-1.5 transition-all" data-floor="6F">
+            <span>6th</span>
+            <span class="free-badge text-[10px] px-1.5 py-0.2 bg-regal-navy text-slate-300 rounded-full" id="badge-count-6F">-</span>
+          </button>
+          <button class="floor-pill px-3 py-1 rounded-full bg-regal-obsidian border border-regal-gold/30 text-slate-300 hover:text-white font-medium flex items-center gap-1.5 transition-all" data-floor="7F">
+            <span>7th</span>
+            <span class="free-badge text-[10px] px-1.5 py-0.2 bg-regal-navy text-slate-300 rounded-full" id="badge-count-7F">-</span>
+          </button>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex items-center gap-3 text-xs font-semibold">
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-md bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+            <span class="text-slate-300">Available</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-md bg-amber-400 shadow-[0_0_8px_#f59e0b]"></span>
+            <span class="text-slate-300">&lt;30m Free</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-md bg-rose-500 shadow-[0_0_8px_#e11d48]"></span>
+            <span class="text-slate-300">Occupied</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="section3DView" class="space-y-4">
+      <div class="imperial-card rounded-3xl p-4 sm:p-5 border border-regal-gold/30 relative overflow-hidden shadow-royal-card">
+        
+        <!-- 3D Viewport Controls Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3 pb-3 border-b border-regal-gold/20">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-regal-gold animate-pulse"></span>
+            <h3 class="font-serif font-bold text-sm sm:text-base text-white">SRM FET Academic Block • 3D Digital Twin</h3>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs">
+            <button id="btnExplodeView" class="px-3 py-1.5 rounded-xl bg-regal-obsidian border border-regal-gold/30 hover:border-regal-gold text-regal-champagne font-semibold transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-layer-group text-regal-gold"></i>
+              <span id="lblExplodeText">Floor Dissection</span>
+            </button>
+            <button id="btnResetCamera" class="px-3 py-1.5 rounded-xl bg-regal-obsidian border border-regal-gold/30 hover:border-regal-gold text-regal-champagne font-semibold transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-arrows-rotate text-regal-gold"></i>
+              <span>Reset View</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3D Canvas Box -->
+        <div class="relative rounded-2xl overflow-hidden border border-regal-gold/20 bg-gradient-to-b from-[#030712] to-[#0a1128]">
+          <div id="canvas3d-container"></div>
+
+          <!-- Instruction hint overlay -->
+          <div class="absolute bottom-3 left-3 bg-regal-obsidian/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-regal-gold/30 text-[11px] text-slate-300 pointer-events-none flex items-center gap-2">
+            <i class="fa-solid fa-hand-pointer text-regal-gold"></i>
+            <span>Click rooms to inspect & start countdown • Drag to orbit & tilt</span>
+          </div>
+
+          <!-- Quick Floor Level Jumper within 3D Canvas -->
+          <div class="absolute top-3 right-3 flex flex-col gap-1.5 bg-regal-obsidian/85 backdrop-blur-md p-1.5 rounded-2xl border border-regal-gold/30 text-xs">
+            <span class="text-[9px] font-serif font-bold text-center text-regal-gold uppercase tracking-widest">Levels</span>
+            <button onclick="focusFloorIn3D('7F')" class="px-2 py-1 rounded-lg hover:bg-regal-navy text-[11px] text-slate-300 font-bold transition-all">7F</button>
+            <button onclick="focusFloorIn3D('6F')" class="px-2 py-1 rounded-lg hover:bg-regal-navy text-[11px] text-slate-300 font-bold transition-all">6F</button>
+            <button onclick="focusFloorIn3D('5F')" class="px-2 py-1 rounded-lg hover:bg-regal-navy text-[11px] text-slate-300 font-bold transition-all">5F</button>
+            <button onclick="focusFloorIn3D('4F')" class="px-2 py-1 rounded-lg hover:bg-regal-navy text-[11px] text-slate-300 font-bold transition-all">4F</button>
+            <button onclick="focusFloorIn3D('2F')" class="px-2 py-1 rounded-lg hover:bg-regal-navy text-[11px] text-slate-300 font-bold transition-all">2F</button>
+            <button onclick="focusFloorIn3D('GF')" class="px-2 py-1 rounded-lg hover:bg-regal-navy text-[11px] text-slate-300 font-bold transition-all">GF/1F</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="selectedRoomHero" class="imperial-card rounded-3xl p-6 border-2 border-regal-gold/50 shadow-royal-gold space-y-6">
+      
+      <!-- Top Room Ident & Status Pill -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-regal-gold/20 gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-14 h-14 rounded-2xl bg-regal-gold/20 border border-regal-gold/50 flex items-center justify-center text-regal-gold text-2xl shadow-inner">
+            <i class="fa-solid fa-door-open" id="heroRoomIcon"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="heroRoomTitle" class="text-2xl sm:text-3xl font-serif font-extrabold text-white">IST 502</h3>
+              <span id="heroStatusBadge" class="px-3 py-0.5 rounded-full text-xs font-black tracking-wide border bg-emerald-950/80 border-emerald-500/60 text-emerald-300">
+                AVAILABLE NOW
+              </span>
+            </div>
+            <p id="heroRoomSubtitle" class="text-xs sm:text-sm text-regal-champagne font-medium mt-0.5">
+              5th Floor • 60 Capacity • Air Conditioned • Smart Board
+            </p>
+          </div>
+        </div>
+
+        <!-- Call the Squad CTA Button -->
+        <div class="flex items-center gap-2">
+          <button id="btnCallSquad" class="px-5 py-3 rounded-2xl gold-btn text-xs sm:text-sm font-extrabold flex items-center gap-2.5 shadow-royal-gold transition-all">
+            <i class="fa-brands fa-whatsapp text-lg"></i>
+            <span>Call the Squad</span>
+          </button>
+          <button id="btnOpenScheduleModal" class="px-4 py-3 rounded-2xl bg-regal-obsidian hover:bg-regal-royalBlue border border-regal-gold/40 text-regal-gold text-xs font-bold transition-all" title="View 5-Day Department Timetable">
+            <i class="fa-solid fa-calendar-week text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Real-Time Countdown Box & Occupancy Timeline -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+        
+        <!-- Live Countdown Display -->
+        <div class="bg-regal-obsidian/90 p-5 rounded-2xl border border-regal-gold/30 flex flex-col items-center justify-center text-center space-y-2">
+          <span class="text-[11px] font-serif font-bold text-regal-gold uppercase tracking-widest flex items-center gap-1.5">
+            <i class="fa-solid fa-stopwatch text-emerald-400"></i>
+            <span id="heroCountdownLabel">Time Left Undisturbed</span>
+          </span>
+          
+          <div class="flex items-baseline justify-center gap-2 font-mono">
+            <div class="bg-regal-navy/90 border border-regal-gold/30 px-3 py-2 rounded-xl text-center min-w-[56px]">
+              <span id="countdownHours" class="text-2xl sm:text-3xl font-extrabold text-white">01</span>
+              <span class="block text-[9px] text-slate-400 font-sans uppercase">Hours</span>
+            </div>
+            <span class="text-2xl font-bold text-regal-gold">:</span>
+            <div class="bg-regal-navy/90 border border-regal-gold/30 px-3 py-2 rounded-xl text-center min-w-[56px]">
+              <span id="countdownMins" class="text-2xl sm:text-3xl font-extrabold text-white">45</span>
+              <span class="block text-[9px] text-slate-400 font-sans uppercase">Mins</span>
+            </div>
+            <span class="text-2xl font-bold text-regal-gold">:</span>
+            <div class="bg-regal-navy/90 border border-regal-gold/30 px-3 py-2 rounded-xl text-center min-w-[56px]">
+              <span id="countdownSecs" class="text-2xl sm:text-3xl font-extrabold text-emerald-400">00</span>
+              <span class="block text-[9px] text-slate-400 font-sans uppercase">Secs</span>
+            </div>
+          </div>
+
+          <p id="heroCountdownContext" class="text-xs text-emerald-300 font-semibold pt-1">
+            Free until 04:15 PM • No scheduled lecture until Period 9
+          </p>
+        </div>
+
+        <!-- Occupancy Context & Professor Details -->
+        <div class="lg:col-span-2 bg-regal-obsidian/60 p-5 rounded-2xl border border-regal-gold/20 space-y-3">
+          <div class="flex items-center justify-between text-xs text-slate-300">
+            <span class="font-serif font-bold text-regal-gold uppercase tracking-wider">Today's Schedule Progression</span>
+            <span id="heroScheduleDetail" class="text-slate-400">Monday • Period 7</span>
+          </div>
+
+          <!-- Room Timeline Strip -->
+          <div id="heroTimelineStrip" class="flex items-center gap-1.5 py-1">
+            <!-- Dynamically injected period blocks -->
+          </div>
+
+          <!-- Context Message Box -->
+          <div id="heroDetailedMessage" class="p-3.5 rounded-xl bg-regal-navy/50 border border-regal-gold/20 text-xs text-slate-200 flex items-start gap-2.5">
+            <i class="fa-solid fa-circle-info text-regal-gold text-base mt-0.5"></i>
+            <div>
+              <p class="font-semibold text-white" id="heroMsgPrimary">This venue is entirely clear right now.</p>
+              <p class="text-slate-400 text-[11px]" id="heroMsgSecondary">Perfect sanctuary for project team meetings, exam prep, or study groups.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <section id="sectionGridView" class="space-y-6">
+      <div id="floorGridContainer" class="space-y-6">
+        <!-- Rendered floor-by-floor dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <div id="squadModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-regal-obsidian/85 backdrop-blur-md hidden">
+    <div class="imperial-card max-w-lg w-full rounded-3xl border-2 border-regal-gold/50 shadow-royal-card overflow-hidden flex flex-col">
+      
+      <div class="px-6 py-5 border-b border-regal-gold/25 flex items-center justify-between bg-regal-obsidian/80">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400 text-xl">
+            <i class="fa-brands fa-whatsapp"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-serif font-bold text-white tracking-wide">Call the Squad</h3>
+            <p class="text-xs text-regal-champagne">Summon your project team & friends to this room</p>
+          </div>
+        </div>
+        <button id="btnCloseSquadModal" class="w-8 h-8 rounded-lg bg-regal-obsidian border border-regal-gold/30 text-slate-400 hover:text-regal-gold flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        
+        <!-- Activity Tag Selection -->
+        <div>
+          <label class="block text-xs font-serif font-bold text-regal-gold uppercase tracking-wider mb-2">
+            Squad Purpose / Mission:
+          </label>
+          <div class="grid grid-cols-3 gap-2" id="squadPurposeSelector">
+            <button class="purpose-pill active py-2 px-3 rounded-xl border border-regal-gold bg-regal-royalBlue text-xs font-bold text-regal-champagne" data-purpose="Final Project Work">
+              💻 Project Work
+            </button>
+            <button class="purpose-pill py-2 px-3 rounded-xl border border-regal-gold/30 bg-regal-obsidian text-xs font-semibold text-slate-300 hover:text-white" data-purpose="Semester Exam Prep">
+              📚 Exam Prep
+            </button>
+            <button class="purpose-pill py-2 px-3 rounded-xl border border-regal-gold/30 bg-regal-obsidian text-xs font-semibold text-slate-300 hover:text-white" data-purpose="Chill & Discuss">
+              ☕ Chill & Talk
+            </button>
+          </div>
+        </div>
+
+        <!-- Generated Message Preview -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-serif font-bold text-regal-gold uppercase tracking-wider">
+              WhatsApp Broadcast Preview:
+            </label>
+            <span class="text-[10px] text-slate-400">Editable preview</span>
+          </div>
+          <textarea 
+            id="squadMessagePreview" 
+            rows="4" 
+            class="w-full p-3.5 bg-regal-obsidian/95 border border-regal-gold/30 rounded-2xl text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-regal-gold font-sans leading-relaxed"
+          ></textarea>
+        </div>
+
+        <!-- Quick Share Action Buttons -->
+        <div class="pt-2 flex flex-col sm:flex-row gap-2.5">
+          <a 
+            id="btnSendWhatsApp" 
+            href="#" 
+            target="_blank"
+            class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-emerald-glow transition-all"
+          >
+            <i class="fa-brands fa-whatsapp text-lg"></i>
+            <span>Send to WhatsApp</span>
+          </a>
+          <button 
+            id="btnCopySquadLink" 
+            class="py-3 px-4 rounded-xl gold-btn text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-sm"
+          >
+            <i class="fa-regular fa-copy"></i>
+            <span>Copy Text</span>
+          </button>
+        </div>
+
+      </div>
+
+      <div class="px-6 py-3.5 border-t border-regal-gold/20 bg-regal-obsidian/70 flex items-center justify-between text-slate-400 text-[11px]">
+        <span>SRMIST FET SEEE • Keep noise levels professional</span>
+        <button id="btnDismissSquadModal" class="hover:text-regal-gold font-medium">Cancel</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="roomModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-regal-obsidian/85 backdrop-blur-md hidden">
+    <div class="imperial-card max-w-4xl w-full rounded-3xl border border-regal-gold/50 shadow-royal-card overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <div class="px-6 py-5 border-b border-regal-gold/25 flex items-center justify-between bg-regal-obsidian/70">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-regal-gold/20 border border-regal-gold/50 flex items-center justify-center text-regal-gold text-xl">
+            <i class="fa-solid fa-landmark"></i>
+          </div>
+          <div>
+            <h3 id="modalRoomTitle" class="text-xl font-serif font-bold text-white tracking-wide">Room IST 502</h3>
+            <p id="modalRoomSubtitle" class="text-xs text-regal-champagne">5th Floor • 60 Capacity • Lecture Hall</p>
+          </div>
+        </div>
+        <button id="btnCloseModal" class="w-9 h-9 rounded-xl bg-regal-obsidian border border-regal-gold/30 hover:border-regal-gold text-slate-400 hover:text-regal-gold flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-400 gap-2">
+          <span>Official 5-Day Master Timetable compiled from 10 departmental schedules:</span>
+          <span class="text-regal-gold font-serif font-bold flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-halved"></i> FET SEEE Official
+          </span>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl border border-regal-gold/30">
+          <table class="w-full text-xs text-left border-collapse">
+            <thead>
+              <tr class="bg-regal-obsidian text-regal-gold font-serif font-bold border-b border-regal-gold/30">
+                <th class="p-3 w-16">Day</th>
+                <th class="p-2.5 text-center">P1<br><span class="text-[9px] text-slate-400 font-sans font-normal">9:00-9:50</span></th>
+                <th class="p-2.5 text-center">P2<br><span class="text-[9px] text-slate-400 font-sans font-normal">9:55-10:45</span></th>
+                <th class="p-2.5 text-center">P3<br><span class="text-[9px] text-slate-400 font-sans font-normal">10:50-11:40</span></th>
+                <th class="p-2.5 text-center">P4<br><span class="text-[9px] text-slate-400 font-sans font-normal">11:45-12:35</span></th>
+                <th class="p-2.5 text-center bg-regal-obsidian/90 text-regal-gold">LUNCH<br><span class="text-[9px] text-slate-400 font-sans font-normal">12:35-1:30</span></th>
+                <th class="p-2.5 text-center">P6<br><span class="text-[9px] text-slate-400 font-sans font-normal">1:30-2:20</span></th>
+                <th class="p-2.5 text-center">P7<br><span class="text-[9px] text-slate-400 font-sans font-normal">2:25-3:15</span></th>
+                <th class="p-2.5 text-center">P8<br><span class="text-[9px] text-slate-400 font-sans font-normal">3:20-4:10</span></th>
+                <th class="p-2.5 text-center">P9<br><span class="text-[9px] text-slate-400 font-sans font-normal">4:15-5:05</span></th>
+              </tr>
+            </thead>
+            <tbody id="modalTableBody" class="divide-y divide-regal-gold/15 bg-regal-obsidian/50 font-sans">
+              <!-- Dynamically populated rows for Mon-Fri -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="modalRoomAttributes" class="pt-2 flex flex-wrap gap-2 text-xs">
+          <!-- Features -->
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-regal-gold/20 bg-regal-obsidian/70 flex items-center justify-between">
+        <span class="text-xs text-slate-400">SRMIST FET • Real-Time Classroom Intelligence</span>
+        <button id="btnCloseModalFooter" class="px-5 py-2 rounded-xl gold-btn text-xs font-bold">
+          Close Timetable
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="statsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-regal-obsidian/85 backdrop-blur-md hidden">
+    <div class="imperial-card max-w-xl w-full rounded-3xl border border-regal-gold/50 shadow-royal-card p-6 space-y-5">
+      <div class="flex items-center justify-between border-b border-regal-gold/20 pb-3">
+        <h3 class="text-lg font-serif font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-regal-gold"></i> Campus Utilization Analytics
+        </h3>
+        <button id="btnCloseStatsModal" class="w-8 h-8 rounded-lg bg-regal-obsidian border border-regal-gold/30 text-slate-400 hover:text-regal-gold flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+        <div class="bg-regal-obsidian/90 p-3.5 rounded-2xl border border-regal-gold/25">
+          <p class="text-2xl font-serif font-extrabold gold-gradient-text" id="statTotalRooms">24</p>
+          <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mt-0.5">Total Rooms</p>
+        </div>
+        <div class="bg-regal-obsidian/90 p-3.5 rounded-2xl border border-regal-gold/25">
+          <p class="text-2xl font-serif font-extrabold text-regal-champagne">10</p>
+          <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mt-0.5">FET Timetables</p>
+        </div>
+        <div class="bg-regal-obsidian/90 p-3.5 rounded-2xl border border-regal-gold/25">
+          <p class="text-2xl font-serif font-extrabold text-emerald-400" id="statFreeNow">-</p>
+          <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mt-0.5">Free Now</p>
+        </div>
+        <div class="bg-regal-obsidian/90 p-3.5 rounded-2xl border border-regal-gold/25">
+          <p class="text-2xl font-serif font-extrabold text-rose-400" id="statOccupiedNow">-</p>
+          <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mt-0.5">Occupied Now</p>
+        </div>
+      </div>
+
+      <div class="bg-regal-obsidian/70 p-4 rounded-2xl border border-regal-gold/20 text-xs space-y-2 text-slate-300">
+        <p class="font-serif font-bold text-regal-gold text-xs uppercase tracking-wider">Indexed Timetable Batches:</p>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-slate-300 text-[11px]">
+          <div>• I ECE-A</div>
+          <div>• I ECE-B & EEE</div>
+          <div>• I ECE - Data Science</div>
+          <div>• I Biotech-B & BME</div>
+          <div>• II BME (Sem III)</div>
+          <div>• II ECE-DS A (Sem III)</div>
+          <div>• II ECE-DS B (Sem III)</div>
+          <div>• III BME (Sem V)</div>
+          <div>• III ECE-A (Sem V)</div>
+          <div>• III ECE-B (Sem V)</div>
+          <div>• III ECE-DS (Sem V)</div>
+          <div>• IV ECE-A & B (Sem VII)</div>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-1">
+        <button id="btnCloseStatsModalBtn" class="px-5 py-2 rounded-xl gold-btn text-xs font-bold">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Floating Element -->
+  <div id="toastNotification" class="fixed bottom-6 right-6 z-50 imperial-card px-5 py-3.5 rounded-2xl border border-regal-gold/60 shadow-royal-gold flex items-center gap-3 transform translate-y-28 opacity-0 transition-all duration-300">
+    <i id="toastIcon" class="fa-solid fa-crown text-regal-gold text-lg"></i>
+    <p id="toastMessage" class="text-xs font-semibold text-regal-champagne">Notice</p>
+  </div>
+
+  <script>
+    // All 24 core venues across 7 floors
+    const ROOMS = [
+      // Ground / 1st Floor
+      { id: "IST 20,21", name: "IST 20 & 21", floorKey: "GF", floorLabel: "Ground Floor", floorLevel: 0, type: "Workshop", capacity: 70, ac: false, projector: false, desc: "Basic Civil & Mechanical Workshop", gridPos: { x: -3.5, z: -2.5, w: 2.2, d: 2.2 } },
+      { id: "IST 106", name: "TB-106", floorKey: "GF", floorLabel: "1st Floor", floorLevel: 0, type: "Classroom", capacity: 45, ac: true, projector: true, desc: "Verbal Reasoning & CDC Hall", gridPos: { x: -1.0, z: -2.5, w: 2.0, d: 2.0 } },
+      { id: "IST 107", name: "IST 107", floorKey: "GF", floorLabel: "1st Floor", floorLevel: 0, type: "Lab", capacity: 40, ac: true, projector: true, desc: "DLMS / Devices & Digital IC Lab", gridPos: { x: 1.5, z: -2.5, w: 2.2, d: 2.0 } },
+      { id: "IST 108", name: "IST 108", floorKey: "GF", floorLabel: "1st Floor", floorLevel: 0, type: "Lab", capacity: 45, ac: true, projector: true, desc: "Bio DSP, VLSI & PCB Hardware Lab", gridPos: { x: 4.0, z: -2.5, w: 2.2, d: 2.0 } },
+
+      // 2nd Floor
+      { id: "IST 201", name: "IST 201", floorKey: "2F", floorLabel: "2nd Floor", floorLevel: 1, type: "Lecture Hall", capacity: 60, ac: false, projector: true, desc: "NSS & Activity Hall", gridPos: { x: -3.5, z: -1.0, w: 2.0, d: 2.0 } },
+      { id: "IST 211", name: "IST 211", floorKey: "2F", floorLabel: "2nd Floor", floorLevel: 1, type: "Classroom", capacity: 55, ac: true, projector: true, desc: "III BME Lecture Theatre", gridPos: { x: -1.0, z: -1.0, w: 2.0, d: 2.0 } },
+      { id: "IST 225", name: "IST 225", floorKey: "2F", floorLabel: "2nd Floor", floorLevel: 1, type: "Classroom", capacity: 60, ac: true, projector: true, desc: "IV ECE-A Lecture Hall", gridPos: { x: 1.5, z: -1.0, w: 2.0, d: 2.0 } },
+      { id: "IST 227", name: "IST 227", floorKey: "2F", floorLabel: "2nd Floor", floorLevel: 1, type: "Classroom", capacity: 60, ac: true, projector: true, desc: "IV ECE-B Lecture Hall", gridPos: { x: 4.0, z: -1.0, w: 2.0, d: 2.0 } },
+
+      // 4th Floor
+      { id: "IST 401", name: "IST 401", floorKey: "4F", floorLabel: "4th Floor", floorLevel: 2, type: "Classroom", capacity: 50, ac: true, projector: true, desc: "Human Values & Theory Hall", gridPos: { x: -3.0, z: 0.5, w: 2.0, d: 2.0 } },
+      { id: "IST 411", name: "IST 411", floorKey: "4F", floorLabel: "4th Floor", floorLevel: 2, type: "Classroom", capacity: 65, ac: true, projector: true, desc: "II ECE-DS B Afternoon Venue", gridPos: { x: 0.0, z: 0.5, w: 2.4, d: 2.0 } },
+      { id: "IST 416", name: "IST 416", floorKey: "4F", floorLabel: "4th Floor", floorLevel: 2, type: "Classroom", capacity: 65, ac: true, projector: true, desc: "II ECE-DS A Forenoon Venue", gridPos: { x: 3.0, z: 0.5, w: 2.4, d: 2.0 } },
+
+      // 5th Floor
+      { id: "IST 502", name: "IST 502", floorKey: "5F", floorLabel: "5th Floor", floorLevel: 3, type: "Classroom", capacity: 60, ac: true, projector: true, desc: "I ECE - Data Science Venue", gridPos: { x: -4.0, z: 2.0, w: 2.0, d: 2.0 } },
+      { id: "IST 510", name: "IST 510", floorKey: "5F", floorLabel: "5th Floor", floorLevel: 3, type: "Lecture Hall", capacity: 55, ac: true, projector: true, desc: "CDC Shared Classroom Hall", gridPos: { x: -1.5, z: 2.0, w: 2.0, d: 2.0 } },
+      { id: "IST 518", name: "IST 518", floorKey: "5F", floorLabel: "5th Floor", floorLevel: 3, type: "Classroom", capacity: 70, ac: true, projector: true, desc: "III ECE-A (FN) & III ECE-B (AN)", gridPos: { x: 1.0, z: 2.0, w: 2.2, d: 2.0 } },
+      { id: "IST 519", name: "IST 519", floorKey: "5F", floorLabel: "5th Floor", floorLevel: 3, type: "Classroom", capacity: 65, ac: true, projector: true, desc: "III ECE - Data Science Venue", gridPos: { x: 3.5, z: 2.0, w: 2.0, d: 2.0 } },
+      { id: "IST 520", name: "IST 520", floorKey: "5F", floorLabel: "5th Floor", floorLevel: 3, type: "Classroom", capacity: 50, ac: false, projector: true, desc: "Cell Biology / Electrical Circuits", gridPos: { x: 5.5, z: 2.0, w: 1.8, d: 2.0 } },
+
+      // 6th Floor
+      { id: "IST 602", name: "IST 602", floorKey: "6F", floorLabel: "6th Floor", floorLevel: 4, type: "Classroom", capacity: 70, ac: true, projector: true, desc: "I ECE-A, I ECE-B & II BME", gridPos: { x: -4.0, z: 3.5, w: 2.2, d: 2.0 } },
+      { id: "IST 609", name: "IST 609", floorKey: "6F", floorLabel: "6th Floor", floorLevel: 4, type: "Lecture Hall", capacity: 50, ac: true, projector: true, desc: "CDC Specialist Lecture Room", gridPos: { x: -1.5, z: 3.5, w: 1.8, d: 2.0 } },
+      { id: "IST 617", name: "IST 617", floorKey: "6F", floorLabel: "6th Floor", floorLevel: 4, type: "Lab", capacity: 50, ac: true, projector: false, desc: "PPS Lab & PCB Circuit Lab", gridPos: { x: 0.5, z: 3.5, w: 1.8, d: 2.0 } },
+      { id: "IST 618", name: "IST 618", floorKey: "6F", floorLabel: "6th Floor", floorLevel: 4, type: "Lab", capacity: 50, ac: true, projector: false, desc: "PPS Computer Programming Lab", gridPos: { x: 2.5, z: 3.5, w: 1.8, d: 2.0 } },
+      { id: "IST 625", name: "IST 625", floorKey: "6F", floorLabel: "6th Floor", floorLevel: 4, type: "Classroom", capacity: 60, ac: true, projector: true, desc: "Analytical Thinking & CDC Hub", gridPos: { x: 4.5, z: 3.5, w: 1.8, d: 2.0 } },
+      { id: "IST 626", name: "IST 626", floorKey: "6F", floorLabel: "6th Floor", floorLevel: 4, type: "Classroom", capacity: 45, ac: true, projector: true, desc: "German Language Hub", gridPos: { x: 6.2, z: 3.5, w: 1.6, d: 2.0 } },
+
+      // 7th Floor
+      { id: "IST 702", name: "IST 702", floorKey: "7F", floorLabel: "7th Floor", floorLevel: 5, type: "Classroom", capacity: 60, ac: true, projector: true, desc: "I Biotech-B & Biomedical Engg", gridPos: { x: -2.0, z: 5.0, w: 2.8, d: 2.2 } },
+      { id: "IST 710", name: "IST 710", floorKey: "7F", floorLabel: "7th Floor", floorLevel: 5, type: "Lecture Hall", capacity: 60, ac: true, projector: true, desc: "Biology & Shared CDC Lecture Hall", gridPos: { x: 2.0, z: 5.0, w: 2.8, d: 2.2 } }
+    ];
+
+    // College Period Timing Metadata
+    const PERIODS = [
+      { id: 1, label: "P1", start: "09:00", end: "09:50", startMin: 540, endMin: 590 },
+      { id: 2, label: "P2", start: "09:55", end: "10:45", startMin: 595, endMin: 645 },
+      { id: 3, label: "P3", start: "10:50", end: "11:40", startMin: 650, endMin: 700 },
+      { id: 4, label: "P4", start: "11:45", end: "12:35", startMin: 705, endMin: 755 },
+      { id: 5, label: "Lunch", start: "12:35", end: "01:30", startMin: 755, endMin: 810, isLunch: true },
+      { id: 6, label: "P6", start: "01:30", end: "02:20", startMin: 810, endMin: 860 },
+      { id: 7, label: "P7", start: "02:25", end: "03:15", startMin: 865, endMin: 915 },
+      { id: 8, label: "P8", start: "03:20", end: "04:10", startMin: 920, endMin: 970 },
+      { id: 9, label: "P9", start: "04:15", end: "05:05", startMin: 975, endMin: 1025 },
+    ];
+
+    const FLOORS = [
+      { key: "GF", label: "Ground & 1st Floor", sub: "Core Labs, Mechanical & Civil Workshops, TB-106" },
+      { key: "2F", label: "2nd Floor", sub: "Senior Theatres (IV ECE-A/B, III BME, NSS)" },
+      { key: "4F", label: "4th Floor", sub: "Data Science Classrooms (II ECE-DS A & B)" },
+      { key: "5F", label: "5th Floor", sub: "CDC Center & Mid-Senior Classrooms (518/519/520)" },
+      { key: "6F", label: "6th Floor", sub: "Language Hub, Programming Computer Labs & IST 602" },
+      { key: "7F", label: "7th Floor", sub: "Biotechnology & Biomedical Lecture Theatres (702/710)" }
+    ];
+
+    // Schedule Storage
+    const SCHEDULE_DATA = {};
+    ROOMS.forEach(r => {
+      SCHEDULE_DATA[r.id] = { Mon: {}, Tue: {}, Wed: {}, Thu: {}, Fri: {} };
+    });
+
+    function bookSlot(room, day, periods, course, batch, faculty, slot) {
+      if (!SCHEDULE_DATA[room]) SCHEDULE_DATA[room] = { Mon: {}, Tue: {}, Wed: {}, Thu: {}, Fri: {} };
+      periods.forEach(p => {
+        SCHEDULE_DATA[room][day][p] = { course, batch, faculty: faculty || "Faculty", slot: slot || "" };
+      });
+    }
+
+    // 1. I ECE-A
+    bookSlot("IST 602", "Mon", [1, 2], "Philosophy of Engg (E)", "I ECE-A", "Dr. R. Aarthi", "E");
+    bookSlot("IST 602", "Mon", [3], "Chemistry (B)", "I ECE-A", "Dr. P. Pachamuthu", "B");
+    bookSlot("IST 602", "Mon", [4], "Calculus & Complex (A)", "I ECE-A", "Dr. R. Ragul", "A");
+    bookSlot("IST 710", "Mon", [8], "Biology (F)", "I ECE-A", "Dr. M. Jaya Priya", "F");
+    bookSlot("IST 710", "Mon", [9], "CDC General Aptitude", "I ECE-A", "Mr. Sivanandhan", "CDC");
+
+    bookSlot("IST 602", "Tue", [1], "PCB Design (C)", "I ECE-A", "Dr. U. Shajith Ali", "C");
+    bookSlot("IST 602", "Tue", [2], "Chemistry (B)", "I ECE-A", "Dr. P. Pachamuthu", "B");
+    bookSlot("IST 602", "Tue", [3], "Calculus (A)", "I ECE-A", "Dr. R. Ragul", "A");
+    bookSlot("IST 602", "Tue", [4], "Programming (D)", "I ECE-A", "Dr. A. Rama Prasath", "D");
+    bookSlot("IST 20,21", "Tue", [6, 7], "Civil & Mech Workshop", "I ECE-A", "Dr. M. Kumaran", "LAB");
+
+    bookSlot("IST 602", "Wed", [1], "Chemistry (B)", "I ECE-A", "Dr. P. Pachamuthu", "B");
+    bookSlot("IST 602", "Wed", [2], "Philosophy of Engg (E)", "I ECE-A", "Dr. R. Aarthi", "E");
+    bookSlot("IST 602", "Wed", [3], "Programming (D)", "I ECE-A", "Dr. A. Rama Prasath", "D");
+    bookSlot("IST 618", "Wed", [6, 7], "PPS Computer Lab", "I ECE-A", "Dr. A. Rama Prasath", "LAB");
+    bookSlot("IST 108", "Wed", [8, 9], "PCB Design Lab", "I ECE-A", "Dr. U. Shajith Ali", "LAB");
+
+    bookSlot("IST 602", "Thu", [2], "German Language", "I ECE-A", "Mr. Selva", "LANG");
+    bookSlot("IST 602", "Thu", [4], "Calculus (A)", "I ECE-A", "Dr. R. Ragul", "A");
+    bookSlot("IST 510", "Thu", [6, 7], "CDC Aptitude Training", "I ECE-A", "Mr. Sivanandhan", "CDC");
+    bookSlot("IST 201", "Thu", [8], "NSS Training", "I ECE-A", "Dr. R. Manickam", "NSS");
+
+    bookSlot("IST 602", "Fri", [1], "Programming (D)", "I ECE-A", "Dr. A. Rama Prasath", "D");
+    bookSlot("IST 602", "Fri", [2], "Calculus (A)", "I ECE-A", "Dr. R. Ragul", "A");
+    bookSlot("IST 602", "Fri", [3], "PCB Design (C)", "I ECE-A", "Dr. U. Shajith Ali", "C");
+    bookSlot("IST 602", "Fri", [4], "Chemistry (B)", "I ECE-A", "Dr. P. Pachamuthu", "B");
+    bookSlot("IST 602", "Fri", [6], "Biology (F)", "I ECE-A", "Dr. M. Jaya Priya", "F");
+    bookSlot("IST 626", "Fri", [7], "German Language", "I ECE-A", "Mr. Selva", "LANG");
+
+    // 2. I ECE-B & EEE
+    bookSlot("IST 710", "Mon", [1], "PCB / Biology (F)", "I ECE-B/EEE", "Dr. U. Shajith Ali", "F");
+    bookSlot("IST 520", "Mon", [1], "Electrical Circuits (G)", "I EEE", "Dr. Dheepanchakkravarthy", "G");
+    bookSlot("IST 609", "Mon", [2], "CDC Training", "I ECE-B", "Mrs. Thenmozhi", "CDC");
+    bookSlot("IST 602", "Mon", [6, 7], "Philosophy of Engg (E)", "I ECE-B/EEE", "Dr. R. Aarthi", "E");
+    bookSlot("IST 602", "Mon", [8], "Chemistry (B)", "I ECE-B/EEE", "Dr. N. Prabhu", "B");
+    bookSlot("IST 602", "Mon", [9], "Calculus (A)", "I ECE-B/EEE", "Dr. M. Deepa", "A");
+
+    bookSlot("IST 20,21", "Tue", [3, 4], "Workshop", "I ECE-B/EEE", "Dr. Modasir Khan", "LAB");
+    bookSlot("IST 602", "Tue", [6], "Biology (C)", "I ECE-B/EEE", "Dr. M. Jaya Priya", "C");
+    bookSlot("IST 602", "Tue", [7], "Chemistry (B)", "I ECE-B/EEE", "Dr. N. Prabhu", "B");
+    bookSlot("IST 602", "Tue", [8], "Calculus (A)", "I ECE-B/EEE", "Dr. M. Deepa", "A");
+    bookSlot("IST 602", "Tue", [9], "Programming (D)", "I ECE-B/EEE", "Dr. A. Rama Prasath", "D");
+
+    bookSlot("IST 710", "Wed", [1], "PCB Design (F)", "I ECE-B", "Dr. U. Shajith Ali", "F");
+    bookSlot("IST 520", "Wed", [1], "Electrical Circuits (G)", "I EEE", "Dr. Dheepanchakkravarthy", "G");
+    bookSlot("IST 201", "Wed", [2], "NSS Training", "I ECE-B/EEE", "Dr. R. Manickam", "NSS");
+    bookSlot("IST 510", "Wed", [3, 4], "CDC Training", "I ECE-B/EEE", "Mrs. Thenmozhi", "CDC");
+    bookSlot("IST 602", "Wed", [6], "Programming (D)", "I ECE-B/EEE", "Dr. A. Rama Prasath", "D");
+    bookSlot("IST 602", "Wed", [7], "Chemistry (B)", "I ECE-B/EEE", "Dr. N. Prabhu", "B");
+    bookSlot("IST 602", "Wed", [8], "German Language", "I ECE-B/EEE", "Mr. Selva", "LANG");
+    bookSlot("IST 602", "Wed", [9], "Programming (D)", "I ECE-B/EEE", "Dr. A. Rama Prasath", "D");
+
+    bookSlot("IST 617", "Thu", [1, 2], "PPS Lab", "I ECE-B/EEE", "Dr. A. Rama Prasath", "LAB");
+    bookSlot("IST 626", "Thu", [3], "Biology (C)", "I ECE-B", "Dr. M. Jaya Priya", "C");
+    bookSlot("IST 710", "Thu", [4], "Calculus (A)", "I ECE-B/EEE", "Dr. M. Deepa", "A");
+    bookSlot("IST 618", "Thu", [5], "PPS Lab Extra", "I ECE-B/EEE", "Dr. A. Rama Prasath", "LAB");
+
+    bookSlot("IST 617", "Fri", [1, 2], "PCB / EC Lab", "I ECE-B/EEE", "Dr. U. Shajith Ali", "LAB");
+    bookSlot("IST 626", "Fri", [6], "German Language", "I ECE-B/EEE", "Mr. Selva", "LANG");
+    bookSlot("IST 602", "Fri", [8], "Chemistry (B)", "I ECE-B/EEE", "Dr. N. Prabhu", "B");
+    bookSlot("IST 602", "Fri", [9], "Calculus (A)", "I ECE-B/EEE", "Dr. M. Deepa", "A");
+
+    // 3. I ECE - Data Science (IST 502)
+    bookSlot("IST 710", "Mon", [1], "Biology (F)", "I ECE-DS", "Dr. M. Maria Leena", "F");
+    bookSlot("IST 617", "Mon", [3, 4], "PCB Lab / CDC", "I ECE-DS", "Dr. Senthil Kumaran", "LAB");
+    bookSlot("IST 502", "Mon", [6, 7], "Philosophy of Engg (E)", "I ECE-DS", "Dr. R. Ramesh", "E");
+    bookSlot("IST 502", "Mon", [8], "Chemistry (B)", "I ECE-DS", "Dr. Ujjwala", "B");
+    bookSlot("IST 502", "Mon", [9], "Calculus (A)", "I ECE-DS", "Dr. Pandiyarajan", "A");
+
+    bookSlot("IST 201", "Tue", [3, 4], "NSS Training", "I ECE-DS", "Dr. R. Manickam", "NSS");
+    bookSlot("IST 502", "Tue", [6], "PCB Design (C)", "I ECE-DS", "Dr. V.N. Senthil", "C");
+    bookSlot("IST 502", "Tue", [7], "Chemistry (B)", "I ECE-DS", "Dr. Ujjwala", "B");
+    bookSlot("IST 502", "Tue", [8], "Calculus (A)", "I ECE-DS", "Dr. Pandiyarajan", "A");
+    bookSlot("IST 502", "Tue", [9], "Programming (D)", "I ECE-DS", "Mrs. Sharanya", "D");
+
+    bookSlot("IST 510", "Wed", [1, 2], "CDC Aptitude", "I ECE-DS", "Mr. Sivanandhan", "CDC");
+    bookSlot("IST 710", "Wed", [3], "Calculus (A)", "I ECE-DS", "Dr. Pandiyarajan", "A");
+    bookSlot("IST 617", "Wed", [6], "PPS Lab", "I ECE-DS", "Mrs. Sharanya", "LAB");
+    bookSlot("IST 502", "Wed", [7], "Chemistry (B)", "I ECE-DS", "Dr. Ujjwala", "B");
+    bookSlot("IST 502", "Wed", [8], "Philosophy of Engg (E)", "I ECE-DS", "Dr. R. Ramesh", "E");
+    bookSlot("IST 502", "Wed", [9], "Programming (D)", "I ECE-DS", "Mrs. Sharanya", "D");
+
+    bookSlot("IST 710", "Thu", [1], "Biology (F)", "I ECE-DS", "Dr. M. Maria Leena", "F");
+    bookSlot("IST 510", "Thu", [2], "Calculus (A)", "I ECE-DS", "Dr. Pandiyarajan", "A");
+    bookSlot("IST 710", "Thu", [3], "Programming (D)", "I ECE-DS", "Mrs. Sharanya", "D");
+    bookSlot("IST 502", "Thu", [6], "German Language", "I ECE-DS", "Mr. Selva", "LANG");
+    bookSlot("IST 502", "Thu", [8], "PCB Design (C)", "I ECE-DS", "Dr. Senthil Kumaran", "C");
+    bookSlot("IST 502", "Thu", [9], "Chemistry (B)", "I ECE-DS", "Dr. Ujjwala", "B");
+
+    bookSlot("IST 626", "Fri", [2], "German Language", "I ECE-DS", "Mr. Selva", "LANG");
+    bookSlot("IST 617", "Fri", [4], "PPS Lab", "I ECE-DS", "Mrs. Sharanya", "LAB");
+    bookSlot("IST 20,21", "Fri", [7, 8], "Workshop", "I ECE-DS", "Dr. Sakthibalan", "LAB");
+
+    // 4. I Biotech-B & BME (IST 702)
+    bookSlot("IST 520", "Mon", [1], "Cell Biology (C)", "I Biotech-B/BME", "Dr. Daniel Paul", "C");
+    bookSlot("IST 710", "Mon", [4], "Biochemistry (F)", "I Biotech-B", "Dr. M. Jaya Priya", "F");
+    bookSlot("IST 520", "Mon", [4], "Human Physiology (G)", "I BME", "Dr. Gifta", "G");
+    bookSlot("IST 702", "Mon", [6, 7], "Philosophy of Engg (E)", "I Biotech-B/BME", "Dr. J. Ramya Parkavi", "E");
+    bookSlot("IST 702", "Mon", [8], "Calculus (A)", "I Biotech-B/BME", "Dr. R. Suresh", "A");
+    bookSlot("IST 702", "Mon", [9], "Chemistry (B)", "I Biotech-B/BME", "Dr. R. Logudurai", "B");
+
+    bookSlot("IST 520", "Tue", [1], "Cell Biology (C)", "I Biotech-B", "Dr. Daniel Paul", "C");
+    bookSlot("IST 710", "Tue", [2, 3], "CDC Training", "I Biotech-B/BME", "Mr. Sivanandhan", "CDC");
+    bookSlot("IST 710", "Tue", [4], "Biochemistry (F)", "I Biotech-B", "Dr. M. Jaya Priya", "F");
+    bookSlot("IST 702", "Tue", [7], "Chemistry (B)", "I Biotech-B/BME", "Dr. R. Logudurai", "B");
+    bookSlot("IST 702", "Tue", [8], "Calculus (A)", "I Biotech-B/BME", "Dr. R. Suresh", "A");
+    bookSlot("IST 702", "Tue", [9], "Programming (D)", "I Biotech-B/BME", "Dr. B. Chitradevi", "D");
+
+    bookSlot("IST 20,21", "Wed", [2, 3, 4], "Workshop", "I Biotech-B/BME", "Dr. R. Manimaran", "LAB");
+    bookSlot("IST 702", "Wed", [6], "Programming (D)", "I Biotech-B/BME", "Dr. B. Chitradevi", "D");
+    bookSlot("IST 702", "Wed", [7], "Chemistry (B)", "I Biotech-B/BME", "Dr. R. Logudurai", "B");
+    bookSlot("IST 702", "Wed", [8], "Philosophy of Engg (E)", "I Biotech-B/BME", "Dr. J. Ramya Parkavi", "E");
+    bookSlot("IST 702", "Wed", [9], "Programming (D)", "I Biotech-B/BME", "Dr. B. Chitradevi", "D");
+
+    bookSlot("IST 710", "Thu", [1], "Calculus (A)", "I Biotech-B/BME", "Dr. R. Suresh", "A");
+    bookSlot("IST 510", "Thu", [4], "Cell Biology (C)", "I Biotech-B", "Dr. Daniel Paul", "C");
+    bookSlot("IST 520", "Thu", [4], "Human Physiology (G)", "I BME", "Dr. Gifta", "G");
+    bookSlot("IST 702", "Thu", [6], "Chemistry (B)", "I Biotech-B/BME", "Dr. R. Logudurai", "B");
+    bookSlot("IST 702", "Thu", [8], "Japanese Language", "I Biotech-B/BME", "Mr. Nadeem", "LANG");
+
+    bookSlot("IST 702", "Fri", [1], "Calculus (A)", "I Biotech-B/BME", "Dr. R. Suresh", "A");
+    bookSlot("IST 702", "Fri", [2], "Biochemistry (F)", "I Biotech-B/BME", "Dr. M. Jaya Priya", "F");
+    bookSlot("IST 702", "Fri", [3], "CDC Training", "I Biotech-B/BME", "Mr. Sivanandhan", "CDC");
+    bookSlot("IST 702", "Fri", [5], "Japanese Language", "I Biotech-B/BME", "Mr. Nadeem", "LANG");
+
+    // 5. II BME (IST 602 Forenoon)
+    bookSlot("IST 602", "Mon", [1], "Medical Physics (E)", "II BME", "Dr. D. Rajeswari", "E");
+    bookSlot("IST 602", "Mon", [2], "Electric Circuits (C)", "II BME", "Dr. Prabin Kumar Bera", "C");
+    bookSlot("IST 602", "Mon", [3], "Biomed Signals (B)", "II BME", "Dr. Senthil Kumaran", "B");
+    bookSlot("IST 602", "Mon", [4], "Social Engg (I)", "II BME", "Mrs. Francis", "I");
+    bookSlot("IST 107", "Mon", [6, 7], "DLMS / EEC Lab", "II BME", "Dr. G. Gifta", "LAB");
+
+    bookSlot("IST 602", "Tue", [1], "Electric Circuits (C)", "II BME", "Dr. Prabin Kumar Bera", "C");
+    bookSlot("IST 602", "Tue", [2], "Medical Physics (E)", "II BME", "Dr. D. Rajeswari", "E");
+    bookSlot("IST 602", "Tue", [3], "Transforms (A)", "II BME", "Dr. A. Manickam", "A");
+    bookSlot("IST 106", "Tue", [6, 7], "Verbal Reasoning (H)", "II BME", "CDC-TB-106", "H");
+
+    bookSlot("IST 602", "Wed", [1], "Biomed Signals (B)", "II BME", "Dr. Senthil Kumaran", "B");
+    bookSlot("IST 602", "Wed", [2], "Digital Logic (D)", "II BME", "Dr. G. Gifta", "D");
+    bookSlot("IST 602", "Wed", [4], "Transforms (A)", "II BME", "Dr. A. Manickam", "A");
+    bookSlot("IST 106", "Wed", [6], "Verbal Reasoning (H)", "II BME", "CDC-TB-106", "H");
+    bookSlot("IST 602", "Wed", [7], "Human Values (G)", "II BME", "Mrs. N. Suganthi", "G");
+
+    bookSlot("IST 602", "Thu", [1], "Transforms (A)", "II BME", "Dr. A. Manickam", "A");
+    bookSlot("IST 602", "Thu", [2], "Medical Physics (E)", "II BME", "Dr. D. Rajeswari", "E");
+    bookSlot("IST 602", "Thu", [3], "Biomed Signals (B)", "II BME", "Dr. Senthil Kumaran", "B");
+    bookSlot("IST 602", "Thu", [4], "Digital Logic (D)", "II BME", "Dr. G. Gifta", "D");
+    bookSlot("IST 107", "Thu", [8, 9], "DLMS Lab", "II BME", "Dr. G. Gifta", "LAB");
+
+    bookSlot("IST 602", "Fri", [1], "Ethics (F)", "II BME", "Dr. H. Sri Bhuvaneshwari", "F");
+    bookSlot("IST 602", "Fri", [2], "Transforms (A)", "II BME", "Dr. A. Manickam", "A");
+    bookSlot("IST 602", "Fri", [3], "Electric Circuits (C)", "II BME", "Dr. Prabin Kumar", "C");
+    bookSlot("IST 602", "Fri", [4], "Digital Logic (D)", "II BME", "Dr. G. Gifta", "D");
+    bookSlot("IST 602", "Fri", [8, 9], "Human Values (G)", "II BME", "Mrs. N. Suganthi", "G");
+
+    // 6. II ECE-DS A (IST 416 Forenoon)
+    bookSlot("IST 416", "Mon", [1], "EM Theory (E)", "II ECE-DS A", "Dr. V. Bharathi", "E");
+    bookSlot("IST 416", "Mon", [2], "Transforms (A)", "II ECE-DS A", "Dr. C. Arun Kumar", "A");
+    bookSlot("IST 416", "Mon", [4], "Social Engg (I)", "II ECE-DS A", "Mrs. D. Lavanya", "I");
+    bookSlot("IST 602", "Mon", [6], "Human Values (G)", "II ECE-DS A", "Mrs. N. Suganthi", "G");
+    bookSlot("IST 107", "Mon", [8, 9], "Devices & IC Lab", "II ECE-DS A", "Dr. Jeevanantham", "LAB");
+
+    bookSlot("IST 416", "Tue", [1], "Computer Org (C)", "II ECE-DS A", "Dr. Murugapandiyan", "C");
+    bookSlot("IST 416", "Tue", [2], "Transforms (A)", "II ECE-DS A", "Dr. C. Arun Kumar", "A");
+    bookSlot("IST 416", "Tue", [3], "EM Theory (E)", "II ECE-DS A", "Dr. V. Bharathi", "E");
+    bookSlot("IST 416", "Tue", [4], "Digital Logic (D)", "II ECE-DS A", "Dr. S. Krishnakumar", "D");
+    bookSlot("IST 602", "Tue", [6], "Human Values (G)", "II ECE-DS A", "Mrs. N. Suganthi", "G");
+    bookSlot("IST 106", "Tue", [8, 9], "Verbal Reasoning (H)", "II ECE-DS A", "CDC-TB-106", "H");
+
+    bookSlot("IST 416", "Wed", [1], "Transforms (A)", "II ECE-DS A", "Dr. C. Arun Kumar", "A");
+    bookSlot("IST 416", "Wed", [2], "Solid State (B)", "II ECE-DS A", "Dr. Jeevanantham S", "B");
+    bookSlot("IST 416", "Wed", [3], "Computer Org (C)", "II ECE-DS A", "Dr. Murugapandiyan", "C");
+    bookSlot("IST 416", "Wed", [4], "Digital Logic (D)", "II ECE-DS A", "Dr. S. Krishnakumar", "D");
+    bookSlot("IST 106", "Wed", [6, 7], "Verbal Reasoning (H)", "II ECE-DS A", "CDC-TB-106", "H");
+
+    bookSlot("IST 416", "Thu", [1], "Solid State (B)", "II ECE-DS A", "Dr. Jeevanantham S", "B");
+    bookSlot("IST 416", "Thu", [2], "Computer Org (C)", "II ECE-DS A", "Dr. Murugapandiyan", "C");
+    bookSlot("IST 416", "Thu", [3], "Transforms (A)", "II ECE-DS A", "Dr. C. Arun Kumar", "A");
+    bookSlot("IST 416", "Thu", [4], "Ethics (F)", "II ECE-DS A", "Dr. Jothi M", "F");
+    bookSlot("IST 107", "Thu", [6, 7], "Devices & IC Lab", "II ECE-DS A", "Dr. V. Bharathi", "LAB");
+
+    bookSlot("IST 416", "Fri", [1], "Digital Logic (D)", "II ECE-DS A", "Dr. S. Krishnakumar", "D");
+    bookSlot("IST 416", "Fri", [2], "Solid State (B)", "II ECE-DS A", "Dr. Jeevanantham S", "B");
+    bookSlot("IST 416", "Fri", [3], "EM Theory (E)", "II ECE-DS A", "Dr. V. Bharathi", "E");
+    bookSlot("IST 416", "Fri", [4], "Computer Org (C)", "II ECE-DS A", "Dr. Murugapandiyan", "C");
+
+    // 7. II ECE-DS B (IST 411 Afternoon)
+    bookSlot("IST 107", "Mon", [1, 2], "Devices & IC Lab", "II ECE-DS B", "Dr. S. Krishnakumar", "LAB");
+    bookSlot("IST 411", "Mon", [6], "Digital Logic (D)", "II ECE-DS B", "Dr. S. Krishnakumar", "D");
+    bookSlot("IST 411", "Mon", [7], "Solid State (B)", "II ECE-DS B", "Dr. Jeevanantham S", "B");
+    bookSlot("IST 411", "Mon", [8], "Computer Org (C)", "II ECE-DS B", "Dr. Murugapandiyan", "C");
+    bookSlot("IST 411", "Mon", [9], "Social Engg (I)", "II ECE-DS B", "Mrs. D. Lavanya", "I");
+
+    bookSlot("IST 107", "Tue", [3, 4], "Devices & IC Lab", "II ECE-DS B", "Dr. S. Krishnakumar", "LAB");
+    bookSlot("IST 411", "Tue", [6], "Computer Org (C)", "II ECE-DS B", "Dr. Murugapandiyan", "C");
+    bookSlot("IST 411", "Tue", [7], "Digital Logic (D)", "II ECE-DS B", "Dr. S. Krishnakumar", "D");
+    bookSlot("IST 411", "Tue", [8], "EM Theory (E)", "II ECE-DS B", "Dr. V. Bharathi", "E");
+    bookSlot("IST 411", "Tue", [9], "Transforms (A)", "II ECE-DS B", "New Faculty 3", "A");
+
+    bookSlot("IST 401", "Wed", [1, 2], "Human Values (G)", "II ECE-DS B", "Mrs. D. Lavanya", "G");
+    bookSlot("IST 411", "Wed", [6], "Social Engg (I)", "II ECE-DS B", "Mrs. D. Lavanya", "I");
+    bookSlot("IST 411", "Wed", [7], "EM Theory (E)", "II ECE-DS B", "Dr. V. Bharathi", "E");
+    bookSlot("IST 411", "Wed", [8], "Transforms (A)", "II ECE-DS B", "New Faculty 3", "A");
+    bookSlot("IST 411", "Wed", [9], "Digital Logic (D)", "II ECE-DS B", "Dr. S. Krishnakumar", "D");
+
+    bookSlot("IST 401", "Thu", [1], "Human Values (G)", "II ECE-DS B", "Mrs. D. Lavanya", "G");
+    bookSlot("IST 106", "Thu", [3, 4], "Verbal Reasoning (H)", "II ECE-DS B", "CDC-TB-106", "H");
+    bookSlot("IST 411", "Thu", [6], "Transforms (A)", "II ECE-DS B", "New Faculty 3", "A");
+    bookSlot("IST 411", "Thu", [7], "Computer Org (C)", "II ECE-DS B", "Dr. Murugapandiyan", "C");
+    bookSlot("IST 411", "Thu", [8], "Solid State (B)", "II ECE-DS B", "Dr. Jeevanantham S", "B");
+    bookSlot("IST 411", "Thu", [9], "EM Theory (E)", "II ECE-DS B", "Dr. V. Bharathi", "E");
+
+    bookSlot("IST 106", "Fri", [1, 2], "Verbal Reasoning (H)", "II ECE-DS B", "CDC-TB-106", "H");
+    bookSlot("IST 411", "Fri", [6], "Ethics (F)", "II ECE-DS B", "Dr. K. Vigneshwaran", "F");
+    bookSlot("IST 411", "Fri", [7], "Transforms (A)", "II ECE-DS B", "New Faculty 3", "A");
+    bookSlot("IST 411", "Fri", [8], "Solid State (B)", "II ECE-DS B", "Dr. Jeevanantham S", "B");
+    bookSlot("IST 411", "Fri", [9], "Computer Org (C)", "II ECE-DS B", "Dr. Murugapandiyan", "C");
+
+    // 8. III BME (IST 211 Afternoon)
+    bookSlot("IST 625", "Mon", [1, 2], "Analytical Thinking (G)", "III BME", "CDC-625", "G");
+    bookSlot("IST 107", "Mon", [3, 4], "MPMC Lab", "III BME", "Dr. K. Vigneshwaran", "LAB");
+    bookSlot("IST 211", "Mon", [6], "Modern Wireless (E)", "III BME", "Dr. Vaishnavi", "E");
+    bookSlot("IST 211", "Mon", [7], "Microcontrollers (B)", "III BME", "Dr. K. Vigneshwaran", "B");
+    bookSlot("IST 211", "Mon", [8], "Medical Imaging (F)", "III BME", "Dr. N. Prasanna", "F");
+    bookSlot("IST 211", "Mon", [9], "Indian Art (H)", "III BME", "Dr. G. Gifta", "H");
+
+    bookSlot("IST 108", "Tue", [1, 2], "Bio DSP Lab", "III BME", "Dr. V.N. Senthil", "LAB");
+    bookSlot("IST 625", "Tue", [3], "Analytical Thinking (G)", "III BME", "CDC-625", "G");
+    bookSlot("IST 211", "Tue", [6], "Biomed Signal (C)", "III BME", "Dr. V.N. Senthilkumaran", "C");
+    bookSlot("IST 211", "Tue", [7], "Biometrics (D)", "III BME", "Dr. G. Gifta", "D");
+    bookSlot("IST 211", "Tue", [8], "Prob & Stats (A)", "III BME", "Dr. Karuppusamy", "A");
+    bookSlot("IST 211", "Tue", [9], "Microcontrollers (B)", "III BME", "Dr. K. Vigneshwaran", "B");
+
+    bookSlot("IST 211", "Wed", [6], "Biomed Signal (C)", "III BME", "Dr. V.N. Senthil", "C");
+    bookSlot("IST 211", "Wed", [7], "Prob & Stats (A)", "III BME", "Dr. Karuppusamy", "A");
+    bookSlot("IST 211", "Wed", [8], "Medical Imaging (F)", "III BME", "Dr. N. Prasanna", "F");
+    bookSlot("IST 211", "Wed", [9], "Biometrics (D)", "III BME", "Dr. G. Gifta", "D");
+
+    bookSlot("IST 108", "Thu", [3, 4], "Community Connect (I)", "III BME", "Dr. J. Jencia", "I");
+    bookSlot("IST 211", "Thu", [6], "Prob & Stats (A)", "III BME", "Dr. Karuppusamy", "A");
+    bookSlot("IST 211", "Thu", [7], "Biomed Signal (C)", "III BME", "Dr. V.N. Senthil", "C");
+    bookSlot("IST 211", "Thu", [8], "Modern Wireless (E)", "III BME", "Dr. Vaishnavi", "E");
+    bookSlot("IST 211", "Thu", [9], "Microcontrollers (B)", "III BME", "Dr. K. Vigneshwaran", "B");
+
+    bookSlot("IST 108", "Fri", [1, 2], "Community Connect (I)", "III BME", "Dr. N. Prasanna", "I");
+    bookSlot("IST 211", "Fri", [6], "Medical Imaging (F)", "III BME", "Dr. N. Prasanna", "F");
+    bookSlot("IST 211", "Fri", [7], "Prob & Stats (A)", "III BME", "Dr. Karuppusamy", "A");
+    bookSlot("IST 211", "Fri", [8], "Biometrics (D)", "III BME", "Dr. G. Gifta", "D");
+    bookSlot("IST 211", "Fri", [9], "Modern Wireless (E)", "III BME", "Dr. Vaishnavi", "E");
+
+    // 9. III ECE-A (IST 518 Forenoon)
+    bookSlot("IST 518", "Mon", [1], "ML For All (E)", "III ECE-A", "Dr. J. Jencia", "E");
+    bookSlot("IST 518", "Mon", [2, 3], "Microprocessors (B)", "III ECE-A", "Dr. M. Manikandan", "B");
+    bookSlot("IST 518", "Mon", [4], "Discrete Maths (A)", "III ECE-A", "New Faculty 3", "A");
+
+    bookSlot("IST 518", "Tue", [1], "Indian Art Form (H)", "III ECE-A", "Dr. K. Vigneshwaran", "H");
+    bookSlot("IST 518", "Tue", [2], "Sys on Chip (D)", "III ECE-A", "Dr. V. Manikandan", "D");
+    bookSlot("IST 518", "Tue", [3], "Microprocessors (B)", "III ECE-A", "Dr. M. Manikandan", "B");
+    bookSlot("IST 518", "Tue", [4], "Micro Project (B)", "III ECE-A", "Dr. M. Manikandan", "B");
+    bookSlot("IST 625", "Tue", [7, 8], "Analytical Thinking (G)", "III ECE-A", "CDC/625", "G");
+
+    bookSlot("IST 518", "Wed", [1], "VLSI Design (C)", "III ECE-A", "Dr. M. Jothi", "C");
+    bookSlot("IST 518", "Wed", [3], "Sys on Chip (D)", "III ECE-A", "Dr. V. Manikandan", "D");
+    bookSlot("IST 518", "Wed", [4], "Community Connect (F)", "III ECE-A", "Dr. V. Rajesh", "F");
+    bookSlot("IST 625", "Wed", [6, 7], "Analytical Thinking (G)", "III ECE-A", "CDC/625", "G");
+
+    bookSlot("IST 518", "Thu", [1], "Discrete Maths (A)", "III ECE-A", "New Faculty 3", "A");
+    bookSlot("IST 518", "Thu", [2], "ML For All (E)", "III ECE-A", "Dr. J. Jencia", "E");
+    bookSlot("IST 518", "Thu", [3], "VLSI Design (C)", "III ECE-A", "Dr. M. Jothi", "C");
+    bookSlot("IST 518", "Thu", [4], "Community Connect (F)", "III ECE-A", "Dr. V. Bharathi", "F");
+    bookSlot("IST 108", "Thu", [6, 7, 8, 9], "VLSI / Micro Lab", "III ECE-A", "Dr. M. Jothi", "LAB");
+
+    bookSlot("IST 518", "Fri", [1], "Sys on Chip (D)", "III ECE-A", "Dr. V. Manikandan", "D");
+    bookSlot("IST 518", "Fri", [2], "Discrete Maths (A)", "III ECE-A", "New Faculty 3", "A");
+    bookSlot("IST 518", "Fri", [3], "ML For All (E)", "III ECE-A", "Dr. J. Jencia", "E");
+    bookSlot("IST 518", "Fri", [4], "VLSI Design (C)", "III ECE-A", "Dr. M. Jothi", "C");
+
+    // 10. III ECE-B (IST 518 Afternoon)
+    bookSlot("IST 108", "Mon", [1, 2], "VLSI / Micro Lab", "III ECE-B", "Dr. Sreenivasa Rao", "LAB");
+    bookSlot("IST 518", "Mon", [6], "ML For All (E)", "III ECE-B", "Dr. J. Jencia", "E");
+    bookSlot("IST 518", "Mon", [7], "Microprocessors (B)", "III ECE-B", "Mrs. B. Abirami", "B");
+    bookSlot("IST 518", "Mon", [8], "Discrete Maths (A)", "III ECE-B", "Dr. Thanga Rejini", "A");
+    bookSlot("IST 518", "Mon", [9], "Sys on Chip (D)", "III ECE-B", "Dr. V. Manikandan", "D");
+
+    bookSlot("IST 625", "Tue", [1, 2], "Analytical Thinking (G)", "III ECE-B", "CDC-625", "G");
+    bookSlot("IST 518", "Tue", [6], "Community Connect (F)", "III ECE-B", "Dr. H. Sudharsan", "F");
+    bookSlot("IST 518", "Tue", [7], "Microprocessors (B)", "III ECE-B", "Mrs. B. Abirami", "B");
+    bookSlot("IST 518", "Tue", [8], "Sys on Chip (D)", "III ECE-B", "Dr. V. Manikandan", "D");
+    bookSlot("IST 518", "Tue", [9], "VLSI Design (C)", "III ECE-B", "Dr. R. Vinoth Raj", "C");
+
+    bookSlot("IST 625", "Wed", [1, 2], "Analytical Thinking (G)", "III ECE-B", "CDC-625", "G");
+    bookSlot("IST 518", "Wed", [6], "Micro Project (B)", "III ECE-B", "Mrs. B. Abirami", "B");
+    bookSlot("IST 518", "Wed", [7], "Microprocessors (B)", "III ECE-B", "Mrs. B. Abirami", "B");
+    bookSlot("IST 518", "Wed", [8], "Discrete Maths (A)", "III ECE-B", "Dr. Thanga Rejini", "A");
+    bookSlot("IST 518", "Wed", [9], "Indian Art Form (H)", "III ECE-B", "Dr. A. Anand", "H");
+
+    bookSlot("IST 108", "Thu", [1, 2], "VLSI Lab", "III ECE-B", "Dr. B. DeviSri", "LAB");
+    bookSlot("IST 518", "Thu", [6], "Discrete Maths (A)", "III ECE-B", "Dr. Thanga Rejini", "A");
+    bookSlot("IST 518", "Thu", [7], "VLSI Design (C)", "III ECE-B", "Dr. R. Vinoth Raj", "C");
+    bookSlot("IST 518", "Thu", [8], "ML For All (E)", "III ECE-B", "Dr. J. Jencia", "E");
+    bookSlot("IST 518", "Thu", [9], "Community Connect (F)", "III ECE-B", "Ms. T. Swetha", "F");
+
+    bookSlot("IST 518", "Fri", [6], "VLSI Design (C)", "III ECE-B", "Dr. R. Vinoth Raj", "C");
+    bookSlot("IST 518", "Fri", [7], "Discrete Maths (A)", "III ECE-B", "Dr. Thanga Rejini", "A");
+    bookSlot("IST 518", "Fri", [8], "ML For All (E)", "III ECE-B", "Dr. J. Jencia", "E");
+    bookSlot("IST 518", "Fri", [9], "Sys on Chip (D)", "III ECE-B", "Dr. V. Manikandan", "D");
+
+    // 11. III ECE - Data Science (IST 519)
+    bookSlot("IST 519", "Mon", [1], "Database Mgmt (E)", "III ECE-DS", "Dr. S. Saraswathi", "E");
+    bookSlot("IST 519", "Mon", [2], "Microprocessors (B)", "III ECE-DS", "Mrs. B. Abirami", "B");
+    bookSlot("IST 519", "Mon", [3], "VLSI Design (C)", "III ECE-DS", "Dr. R. Vinoth Raj", "C");
+    bookSlot("IST 519", "Mon", [4], "Discrete Maths (A)", "III ECE-DS", "New Faculty 2", "A");
+
+    bookSlot("IST 519", "Tue", [1], "VLSI Design (C)", "III ECE-DS", "Dr. R. Vinoth Raj", "C");
+    bookSlot("IST 519", "Tue", [2], "Microprocessors (B)", "III ECE-DS", "Mrs. B. Abirami", "B");
+    bookSlot("IST 519", "Tue", [3], "ML For All (D)", "III ECE-DS", "Dr. Chitra Devi", "D");
+    bookSlot("IST 519", "Tue", [4], "Community Connect (F)", "III ECE-DS", "Dr. S. Jeevanantham", "F");
+    bookSlot("IST 107", "Tue", [7, 8], "VLSI / Micro Lab", "III ECE-DS", "Dr. R. Vinothraj", "LAB");
+    bookSlot("IST 625", "Tue", [9], "Analytical Thinking (G)", "III ECE-DS", "CDC-625", "G");
+
+    bookSlot("IST 519", "Wed", [1], "Indian Art Form (H)", "III ECE-DS", "Dr. Prabin Kumar", "H");
+    bookSlot("IST 519", "Wed", [2], "Microprocessors (B)", "III ECE-DS", "Mrs. B. Abirami", "B");
+    bookSlot("IST 519", "Wed", [3], "Discrete Maths (A)", "III ECE-DS", "New Faculty 2", "A");
+    bookSlot("IST 519", "Wed", [4], "VLSI Design (C)", "III ECE-DS", "Dr. R. Vinoth Raj", "C");
+
+    bookSlot("IST 519", "Thu", [1], "Discrete Maths (A)", "III ECE-DS", "New Faculty 2", "A");
+    bookSlot("IST 519", "Thu", [2], "ML For All (D)", "III ECE-DS", "Dr. Chitra Devi", "D");
+    bookSlot("IST 519", "Thu", [3], "Database Mgmt (E)", "III ECE-DS", "Dr. S. Saraswathi", "E");
+    bookSlot("IST 519", "Thu", [4], "Community Connect (F)", "III ECE-DS", "Dr. V. Manikandan", "F");
+
+    bookSlot("IST 519", "Fri", [1], "ML For All (D)", "III ECE-DS", "Dr. Chitra Devi", "D");
+    bookSlot("IST 519", "Fri", [2], "Discrete Maths (A)", "III ECE-DS", "New Faculty 2", "A");
+    bookSlot("IST 519", "Fri", [3], "Database Mgmt (E)", "III ECE-DS", "Dr. S. Saraswathi", "E");
+    bookSlot("IST 519", "Fri", [4], "Micro Project (B)", "III ECE-DS", "Mrs. B. Abirami", "B");
+    bookSlot("IST 625", "Fri", [6], "Analytical Thinking (G)", "III ECE-DS", "CDC-625", "G");
+    bookSlot("IST 107", "Fri", [8, 9], "VLSI Lab", "III ECE-DS", "Dr. H. Sri Bhuvaneshwari", "LAB");
+
+    // 12. IV ECE-A (IST 225)
+    bookSlot("IST 225", "Mon", [1], "Network Security (C)", "IV ECE-A", "Dr. S. Jeevanantham", "C");
+    bookSlot("IST 225", "Mon", [2], "Semiconductor Memory (D)", "IV ECE-A", "Dr. Sri Bhuvaneshwari", "D");
+    bookSlot("IST 225", "Mon", [3], "Psychology (A)", "IV ECE-A", "Dr. A. Anand", "A");
+    bookSlot("IST 225", "Mon", [4], "Semiconductor Memory (D)", "IV ECE-A", "Dr. Sri Bhuvaneshwari", "D");
+
+    bookSlot("IST 225", "Tue", [1], "Network Security (C)", "IV ECE-A", "Dr. S. Jeevanantham", "C");
+    bookSlot("IST 108", "Tue", [2, 3], "Network Security Lab", "IV ECE-A", "Mrs. T. Swetha", "LAB");
+    bookSlot("IST 225", "Tue", [3], "Wireless Antenna (B)", "IV ECE-A", "Dr. K. Vigneshwaran", "B");
+    bookSlot("IST 225", "Tue", [4], "ML For All (F)", "IV ECE-A", "Dr. Prasanna Venkatesh", "F");
+
+    bookSlot("IST 225", "Wed", [1], "Wireless Antenna (B)", "IV ECE-A", "Dr. K. Vigneshwaran", "B");
+    bookSlot("IST 225", "Wed", [3], "Scripting Languages (E)", "IV ECE-A", "Dr. Sreenivasa Rao", "E");
+    bookSlot("IST 225", "Wed", [4], "ML For All (F)", "IV ECE-A", "Dr. Prasanna Venkatesh", "F");
+
+    bookSlot("IST 225", "Thu", [1], "ML For All (F)", "IV ECE-A", "Dr. Prasanna Venkatesh", "F");
+    bookSlot("IST 225", "Thu", [2], "Psychology (A)", "IV ECE-A", "Dr. A. Anand", "A");
+    bookSlot("IST 225", "Thu", [3], "Scripting Languages (E)", "IV ECE-A", "Dr. Sreenivasa Rao", "E");
+    bookSlot("IST 225", "Thu", [4], "Wireless Antenna (B)", "IV ECE-A", "Dr. K. Vigneshwaran", "B");
+
+    bookSlot("IST 225", "Fri", [1], "Network Security (C)", "IV ECE-A", "Dr. S. Jeevanantham", "C");
+    bookSlot("IST 225", "Fri", [2], "Psychology (A)", "IV ECE-A", "Dr. A. Anand", "A");
+    bookSlot("IST 225", "Fri", [3], "Semiconductor Memory (D)", "IV ECE-A", "Dr. Sri Bhuvaneshwari", "D");
+    bookSlot("IST 225", "Fri", [4], "Scripting Languages (E)", "IV ECE-A", "Dr. Sreenivasa Rao", "E");
+
+    // 13. IV ECE-B (IST 227)
+    bookSlot("IST 227", "Mon", [1], "Network Security (C)", "IV ECE-B", "Dr. R. Rajasekar", "C");
+    bookSlot("IST 227", "Mon", [2], "Psychology (A)", "IV ECE-B", "Dr. A. Anand", "A");
+    bookSlot("IST 227", "Mon", [3], "Scripting Languages (E)", "IV ECE-B", "Dr. Sreenivasa Rao", "E");
+    bookSlot("IST 227", "Mon", [4], "ML For All (F)", "IV ECE-B", "Dr. Prasanna Venkatesh", "F");
+
+    bookSlot("IST 227", "Tue", [1], "Network Security (C)", "IV ECE-B", "Dr. R. Rajasekar", "C");
+    bookSlot("IST 227", "Tue", [2], "Scripting Languages (E)", "IV ECE-B", "Dr. Sreenivasa Rao", "E");
+    bookSlot("IST 227", "Tue", [3], "ML For All (F)", "IV ECE-B", "Dr. Prasanna Venkatesh", "F");
+    bookSlot("IST 227", "Tue", [4], "Wireless Antenna (B)", "IV ECE-B", "Dr. K. Vigneshwaran", "B");
+
+    bookSlot("IST 227", "Wed", [1], "Network Security (C)", "IV ECE-B", "Dr. R. Rajasekar", "C");
+    bookSlot("IST 227", "Wed", [2], "Semiconductor Memory (D)", "IV ECE-B", "Dr. Sri Bhuvaneshwari", "D");
+    bookSlot("IST 227", "Wed", [3], "Psychology (A)", "IV ECE-B", "Dr. A. Anand", "A");
+    bookSlot("IST 227", "Wed", [4], "Wireless Antenna (B)", "IV ECE-B", "Dr. K. Vigneshwaran", "B");
+
+    bookSlot("IST 227", "Thu", [1], "Semiconductor Memory (D)", "IV ECE-B", "Dr. Sri Bhuvaneshwari", "D");
+    bookSlot("IST 227", "Thu", [2], "Wireless Antenna (B)", "IV ECE-B", "Dr. K. Vigneshwaran", "B");
+    bookSlot("IST 108", "Thu", [3, 4], "Network Security Lab", "IV ECE-B", "Ms. T. Swetha", "LAB");
+    bookSlot("IST 227", "Thu", [4], "Psychology (A)", "IV ECE-B", "Dr. A. Anand", "A");
+
+    bookSlot("IST 227", "Fri", [1], "Scripting Languages (E)", "IV ECE-B", "Dr. Sreenivasa Rao", "E");
+    bookSlot("IST 227", "Fri", [2], "Semiconductor Memory (D)", "IV ECE-B", "Dr. Sri Bhuvaneshwari", "D");
+    bookSlot("IST 227", "Fri", [3], "ML For All (F)", "IV ECE-B", "Dr. Prasanna Venkatesh", "F");
+
+    // Global App State
+    let currentDay = "Mon";
+    let currentPeriod = 7;
+    let selectedFloor = "ALL";
+    let selectedRoomId = "IST 502";
+    let currentViewMode = "3D"; // "3D" or "GRID"
+    let currentSquadPurpose = "Final Project Work";
+    let countdownIntervalId = null;
+
+    function getRoomStatus(roomId, day, period) {
+      const roomSchedule = SCHEDULE_DATA[roomId]?.[day] || {};
+      const occupancy = roomSchedule[period];
+
+      if (occupancy) {
+        // Occupied: find when it becomes free
+        let freeStartsAtPeriod = 10;
+        for (let p = period + 1; p <= 9; p++) {
+          if (!roomSchedule[p]) {
+            freeStartsAtPeriod = p;
+            break;
+          }
+        }
+
+        const currPInfo = PERIODS.find(item => item.id === period);
+        const freePInfo = PERIODS.find(item => item.id === freeStartsAtPeriod);
+
+        return {
+          status: "OCCUPIED",
+          occupancy: occupancy,
+          currentPeriodInfo: currPInfo,
+          freeAtTime: freePInfo ? freePInfo.start : "End of Day (05:05 PM)",
+          freePeriodId: freeStartsAtPeriod
+        };
+      }
+
+      // Available: Check consecutive free slots
+      let consecutiveFreeCount = 1;
+      let nextClassPeriod = null;
+      let nextClassInfo = null;
+
+      for (let p = period + 1; p <= 9; p++) {
+        if (roomSchedule[p]) {
+          nextClassPeriod = p;
+          nextClassInfo = roomSchedule[p];
+          break;
+        } else {
+          consecutiveFreeCount++;
+        }
+      }
+
+      const nextPData = roomSchedule[period + 1];
+      const isUrgentFree = (nextPData !== undefined);
+
+      const targetPeriod = nextClassPeriod ? PERIODS.find(p => p.id === nextClassPeriod) : null;
+      const freeUntilTime = targetPeriod ? targetPeriod.start : "05:05 PM";
+
+      return {
+        status: isUrgentFree ? "URGENT_FREE" : "FREE",
+        occupancy: null,
+        freePeriodsCount: consecutiveFreeCount,
+        freeUntilTime: freeUntilTime,
+        nextClassPeriod: nextClassPeriod,
+        nextClassInfo: nextClassInfo
+      };
+    }
+
+    // Convert time string "HH:MM" (24h or 12h) to total minutes
+    function parseTimeToMinutes(timeStr) {
+      if (!timeStr) return 1025; // default 5:05 PM
+      const [h, m] = timeStr.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function updateHeroRoomCard(roomId) {
+      selectedRoomId = roomId;
+      const room = ROOMS.find(r => r.id === roomId);
+      if (!room) return;
+
+      document.getElementById("heroRoomTitle").innerText = room.name;
+      document.getElementById("heroRoomSubtitle").innerText = `${room.floorLabel} • Capacity: ${room.capacity} • ${room.ac ? '❄️ Air Conditioned' : 'Non-AC'} • ${room.type}`;
+
+      const statusObj = getRoomStatus(room.id, currentDay, currentPeriod);
+      const isOccupied = statusObj.status === "OCCUPIED";
+
+      const badge = document.getElementById("heroStatusBadge");
+      const icon = document.getElementById("heroRoomIcon");
+      const countdownLabel = document.getElementById("heroCountdownLabel");
+      const countdownContext = document.getElementById("heroCountdownContext");
+      const msgPrimary = document.getElementById("heroMsgPrimary");
+      const msgSecondary = document.getElementById("heroMsgSecondary");
+
+      if (isOccupied) {
+        badge.className = "px-3 py-0.5 rounded-full text-xs font-black tracking-wide border bg-rose-950/90 border-rose-500/70 text-rose-300 shadow-ruby-glow";
+        badge.innerText = "CURRENTLY OCCUPIED";
+        icon.className = "fa-solid fa-chalkboard-user text-rose-400";
+        countdownLabel.innerText = "Time Left in Current Lecture";
+        countdownContext.innerHTML = `<span class="text-rose-300">Class in progress: <strong>${statusObj.occupancy.course}</strong> (${statusObj.occupancy.batch})</span>`;
+        msgPrimary.innerText = `Lecture running until ~${PERIODS.find(p=>p.id===currentPeriod)?.end || 'period end'}.`;
+        msgSecondary.innerText = `Faculty: ${statusObj.occupancy.faculty} • Next room opening at approximately ${statusObj.freeAtTime}.`;
+      } else {
+        if (statusObj.status === "URGENT_FREE") {
+          badge.className = "px-3 py-0.5 rounded-full text-xs font-black tracking-wide border bg-amber-950/90 border-amber-500/70 text-amber-300";
+          badge.innerText = "FREE (<30 MIN LEFT)";
+          icon.className = "fa-solid fa-hourglass-half text-amber-400";
+        } else {
+          badge.className = "px-3 py-0.5 rounded-full text-xs font-black tracking-wide border bg-emerald-950/90 border-emerald-500/70 text-emerald-300 shadow-emerald-glow";
+          badge.innerText = "AVAILABLE NOW";
+          icon.className = "fa-solid fa-door-open text-emerald-400";
+        }
+        countdownLabel.innerText = "Time Left Undisturbed";
+        countdownContext.innerHTML = `Free until <strong>${statusObj.freeUntilTime}</strong> (${statusObj.freePeriodsCount} periods undisturbed)`;
+        msgPrimary.innerText = `This sanctuary is clear and quiet right now.`;
+        msgSecondary.innerText = statusObj.nextClassPeriod 
+          ? `Next professor arrives at Period ${statusObj.nextClassPeriod} (${statusObj.freeUntilTime}) for ${statusObj.nextClassInfo.course}.`
+          : `Clear for the rest of today! No scheduled lectures until campus closing.`;
+      }
+
+      // Render timeline strip
+      const strip = document.getElementById("heroTimelineStrip");
+      strip.innerHTML = "";
+      for (let p = 1; p <= 9; p++) {
+        const isCurrent = (p === currentPeriod);
+        const occ = SCHEDULE_DATA[room.id]?.[currentDay]?.[p];
+        let bg = occ ? "bg-rose-600/80" : "bg-emerald-500/80";
+        if (p === 5) bg = "bg-slate-700";
+
+        const block = document.createElement("div");
+        block.className = `flex-1 h-3 rounded-[3px] ${bg} ${isCurrent ? 'ring-2 ring-regal-gold shadow-md scale-110 z-10' : 'opacity-70'} transition-all cursor-pointer`;
+        block.title = `Period ${p} (${PERIODS.find(i=>i.id===p)?.start}): ${occ ? occ.course : 'Free'}`;
+        block.onclick = () => {
+          currentPeriod = p;
+          document.getElementById("periodSelector").value = p;
+          refreshAllViews();
+        };
+        strip.appendChild(block);
+      }
+
+      document.getElementById("heroScheduleDetail").innerText = `${currentDay} • Period ${currentPeriod} (${PERIODS.find(p=>p.id===currentPeriod)?.start || ''})`;
+
+      // Restart live countdown timer
+      restartLiveCountdown(statusObj, isOccupied);
+
+      // Highlight in 3D scene if present
+      highlightRoomIn3D(roomId);
+    }
+
+    function restartLiveCountdown(statusObj, isOccupied) {
+      if (countdownIntervalId) clearInterval(countdownIntervalId);
+
+      const targetTimeStr = isOccupied 
+        ? (PERIODS.find(p => p.id === currentPeriod)?.end || "17:05")
+        : statusObj.freeUntilTime;
+
+      function tick() {
+        const now = new Date();
+        const nowH = now.getHours();
+        const nowM = now.getMinutes();
+        const nowS = now.getSeconds();
+        const currentTotalSec = nowH * 3600 + nowM * 60 + nowS;
+
+        // Parse target "HH:MM"
+        const [tH, tM] = targetTimeStr.split(":").map(Number);
+        // Normalize 12h format if required (SRM schedule afternoon 01:20 -> 13:20)
+        let normalizedHour = tH;
+        if (normalizedHour >= 1 && normalizedHour <= 6) normalizedHour += 12;
+
+        let targetTotalSec = normalizedHour * 3600 + tM * 60;
+        let diffSec = targetTotalSec - currentTotalSec;
+
+        if (diffSec <= 0) {
+          // If viewing simulated period or past closing, fallback to period countdown mock
+          diffSec = Math.max(0, (statusObj.freePeriodsCount || 1) * 50 * 60 - (nowM % 50) * 60 - nowS);
+        }
+
+        const hrs = Math.floor(diffSec / 3600);
+        const mins = Math.floor((diffSec % 3600) / 60);
+        const secs = diffSec % 60;
+
+        document.getElementById("countdownHours").innerText = String(hrs).padStart(2, "0");
+        document.getElementById("countdownMins").innerText = String(mins).padStart(2, "0");
+        document.getElementById("countdownSecs").innerText = String(secs).padStart(2, "0");
+      }
+
+      tick();
+      countdownIntervalId = setInterval(tick, 1000);
+    }
+
+    function renderFloorGrid() {
+      const container = document.getElementById("floorGridContainer");
+      container.innerHTML = "";
+
+      const targetFloors = selectedFloor === "ALL" 
+        ? FLOORS 
+        : FLOORS.filter(f => f.key === selectedFloor);
+
+      let totalRoomsTracked = ROOMS.length;
+      let freeNowCount = 0;
+      let occupiedNowCount = 0;
+      const floorCounts = { GF: 0, '2F': 0, '4F': 0, '5F': 0, '6F': 0, '7F': 0 };
+
+      // Calculate stats
+      ROOMS.forEach(r => {
+        const s = getRoomStatus(r.id, currentDay, currentPeriod);
+        if (s.status !== "OCCUPIED") {
+          freeNowCount++;
+          if (floorCounts[r.floorKey] !== undefined) floorCounts[r.floorKey]++;
+        } else {
+          occupiedNowCount++;
+        }
+      });
+
+      document.getElementById("badge-count-ALL").innerText = `${freeNowCount} free`;
+      Object.keys(floorCounts).forEach(k => {
+        const b = document.getElementById(`badge-count-${k}`);
+        if (b) b.innerText = `${floorCounts[k]} free`;
+      });
+
+      document.getElementById("statTotalRooms").innerText = totalRoomsTracked;
+      document.getElementById("statFreeNow").innerText = freeNowCount;
+      document.getElementById("statOccupiedNow").innerText = occupiedNowCount;
+
+      targetFloors.forEach(floor => {
+        const floorRooms = ROOMS.filter(r => r.floorKey === floor.key);
+        if (floorRooms.length === 0) return;
+
+        const floorCard = document.createElement("div");
+        floorCard.className = "imperial-card rounded-3xl p-5 border border-regal-gold/25 space-y-4 shadow-royal-card";
+
+        const floorHeader = `
+          <div class="flex items-center justify-between pb-3 border-b border-regal-gold/20">
+            <div class="flex items-center gap-3">
+              <span class="w-9 h-9 rounded-xl bg-gradient-to-tr from-regal-goldDark to-regal-gold text-regal-obsidian font-serif font-black text-xs flex items-center justify-center shadow">
+                ${floor.key}
+              </span>
+              <div>
+                <h4 class="text-base font-serif font-bold text-white">${floor.label}</h4>
+                <p class="text-[11px] text-slate-400">${floor.sub}</p>
+              </div>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-regal-obsidian border border-regal-gold/30 text-regal-champagne font-bold">
+              ${floorCounts[floor.key] || 0} Free
+            </span>
+          </div>
+        `;
+
+        let gridHtml = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">`;
+
+        floorRooms.forEach(room => {
+          const status = getRoomStatus(room.id, currentDay, currentPeriod);
+          const isOcc = status.status === "OCCUPIED";
+          const isSelected = room.id === selectedRoomId;
+
+          let badgeColor = "bg-emerald-950/80 border-emerald-500/70 text-emerald-300";
+          let badgeText = "FREE NOW";
+          let borderGlow = isSelected ? "border-2 border-regal-gold shadow-royal-gold" : "border border-regal-gold/20";
+
+          if (isOcc) {
+            badgeColor = "bg-rose-950/80 border-rose-500/70 text-rose-300";
+            badgeText = "OCCUPIED";
+          } else if (status.status === "URGENT_FREE") {
+            badgeColor = "bg-amber-950/80 border-amber-500/70 text-amber-300";
+            badgeText = "<30M LEFT";
+          }
+
+          gridHtml += `
+            <div onclick="selectRoomCard('${room.id}')" class="imperial-card rounded-2xl p-4 cursor-pointer hover:border-regal-gold/60 transition-all flex flex-col justify-between ${borderGlow}">
+              <div>
+                <div class="flex items-start justify-between gap-1.5">
+                  <h5 class="font-serif font-bold text-base text-white hover:text-regal-gold transition-colors">${room.name}</h5>
+                  <span class="text-[9px] font-black px-2 py-0.5 rounded-full border ${badgeColor}">${badgeText}</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">${room.type} • Cap: ${room.capacity}</p>
+
+                <div class="mt-2 flex flex-wrap gap-1">
+                  ${room.ac ? '<span class="text-[9px] bg-regal-royalBlue/80 border border-regal-gold/30 text-regal-champagne px-1.5 py-0.5 rounded">❄️ AC</span>' : ''}
+                  ${room.projector ? '<span class="text-[9px] bg-regal-navy border border-regal-gold/30 text-regal-gold px-1.5 py-0.5 rounded">📽️ Board</span>' : ''}
+                  <span class="text-[9px] bg-regal-obsidian text-slate-400 px-1.5 py-0.5 rounded border border-slate-800">${room.floorLabel}</span>
+                </div>
+
+                <div class="mt-3 p-2.5 rounded-xl ${isOcc ? 'bg-rose-950/30 border border-rose-900/40 text-rose-200' : 'bg-emerald-950/30 border border-emerald-800/40 text-emerald-300'} text-xs">
+                  ${isOcc 
+                    ? `<div class="truncate font-bold">${status.occupancy.course}</div><div class="text-[10px] text-slate-300 truncate">${status.occupancy.batch}</div>`
+                    : `<div class="font-bold flex items-center gap-1"><i class="fa-solid fa-clock-rotate-left text-[10px]"></i> Free until ${status.freeUntilTime}</div><div class="text-[10px] text-slate-300">${status.freePeriodsCount} periods open</div>`
+                  }
+                </div>
+              </div>
+
+              <div class="mt-3 pt-2.5 border-t border-regal-gold/20 flex items-center justify-between gap-2">
+                <button onclick="event.stopPropagation(); openRoomScheduleModal('${room.id}')" class="text-[11px] text-slate-300 hover:text-regal-gold font-semibold flex items-center gap-1">
+                  <i class="fa-solid fa-table-list"></i> Full Week
+                </button>
+                ${!isOcc ? `
+                  <button onclick="event.stopPropagation(); openSquadModalForRoom('${room.id}')" class="px-3 py-1 rounded-lg gold-btn text-[11px] font-bold flex items-center gap-1 shadow-sm">
+                    <i class="fa-brands fa-whatsapp"></i> Call Squad
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        });
+
+        gridHtml += `</div>`;
+        floorCard.innerHTML = floorHeader + gridHtml;
+        container.appendChild(floorCard);
+      });
+    }
+
+    function selectRoomCard(roomId) {
+      updateHeroRoomCard(roomId);
+      renderFloorGrid();
+      // Scroll smoothly to hero card
+      document.getElementById("selectedRoomHero").scrollIntoView({ behavior: 'smooth' });
+    }
+
+    let scene, camera, renderer, controls;
+    let roomMeshes = [];
+    let isDissected = false;
+
+    function init3DBuildingModel() {
+      const container = document.getElementById("canvas3d-container");
+      if (!container) return;
+
+      const width = container.clientWidth || 800;
+      const height = container.clientHeight || 480;
+
+      // 1. Scene setup
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x060b19);
+      scene.fog = new THREE.FogExp2(0x060b19, 0.025);
+
+      // 2. Camera setup
+      camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+      camera.position.set(12, 14, 16);
+
+      // 3. Renderer setup
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      // 4. OrbitControls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2.05; // avoid dipping below floor
+      controls.minDistance = 6;
+      controls.maxDistance = 35;
+      controls.target.set(0, 3, 0);
+
+      // 5. Lighting Setup (Regal Golden & Obsidian Illumination)
+      const ambientLight = new THREE.AmbientLight(0xd4af37, 0.45);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xfff3d1, 0.85);
+      dirLight.position.set(15, 25, 12);
+      dirLight.castShadow = true;
+      scene.add(dirLight);
+
+      const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.3);
+      fillLight.position.set(-15, 10, -10);
+      scene.add(fillLight);
+
+      // Ground plane
+      const groundGeo = new THREE.PlaneGeometry(35, 35);
+      const groundMat = new THREE.MeshStandardMaterial({ color: 0x030712, roughness: 0.8, metalness: 0.2 });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -0.05;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      // Grid helper with subtle royal gold lines
+      const grid = new THREE.GridHelper(30, 30, 0xd4af37, 0x1e293b);
+      grid.position.y = 0;
+      scene.add(grid);
+
+      // 6. Build Floors and Rooms
+      buildBuildingFloors();
+
+      // 7. Raycasting for Click / Inspection
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+
+      renderer.domElement.addEventListener("click", (event) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(roomMeshes);
+
+        if (intersects.length > 0) {
+          const hitMesh = intersects[0].object;
+          if (hitMesh.userData && hitMesh.userData.roomId) {
+            playChime(660);
+            updateHeroRoomCard(hitMesh.userData.roomId);
+            showToast(`Selected ${hitMesh.userData.roomName} on 3D Building Twin`);
+          }
+        }
+      });
+
+      // 8. Responsive Resize
+      window.addEventListener("resize", () => {
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      });
+
+      // 9. Animation Loop
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
+    }
+
+    function buildBuildingFloors() {
+      // Clear old meshes
+      roomMeshes.forEach(m => scene.remove(m));
+      roomMeshes = [];
+
+      const floorHeight = 1.35;
+      const floorGap = isDissected ? 1.6 : 0.15;
+
+      ROOMS.forEach(room => {
+        const levelY = room.floorLevel * (floorHeight + floorGap);
+        const p = room.gridPos;
+
+        // Geometry for room
+        const geo = new THREE.BoxGeometry(p.w, floorHeight * 0.75, p.d);
+        
+        // Status color
+        const status = getRoomStatus(room.id, currentDay, currentPeriod);
+        let colorHex = 0x10b981; // Available Emerald
+        let emissiveHex = 0x054f36;
+
+        if (status.status === "OCCUPIED") {
+          colorHex = 0xe11d48; // Ruby Crimson
+          emissiveHex = 0x580a1c;
+        } else if (status.status === "URGENT_FREE") {
+          colorHex = 0xf59e0b; // Topaz Amber
+          emissiveHex = 0x613b02;
+        }
+
+        const isCurrentSelected = (room.id === selectedRoomId);
+        if (isCurrentSelected) {
+          emissiveHex = 0xd4af37; // Royal Gold Highlight
+        }
+
+        const mat = new THREE.MeshStandardMaterial({
+          color: colorHex,
+          emissive: emissiveHex,
+          emissiveIntensity: isCurrentSelected ? 0.75 : 0.35,
+          roughness: 0.3,
+          metalness: 0.4,
+          transparent: true,
+          opacity: 0.92
+        });
+
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(p.x, levelY + (floorHeight * 0.75) / 2, p.z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+
+        mesh.userData = {
+          roomId: room.id,
+          roomName: room.name,
+          floorKey: room.floorKey,
+          floorLevel: room.floorLevel
+        };
+
+        scene.add(mesh);
+        roomMeshes.push(mesh);
+      });
+    }
+
+    function highlightRoomIn3D(roomId) {
+      if (!roomMeshes || roomMeshes.length === 0) return;
+      roomMeshes.forEach(mesh => {
+        const isMatch = (mesh.userData.roomId === roomId);
+        const status = getRoomStatus(mesh.userData.roomId, currentDay, currentPeriod);
+        
+        let colorHex = 0x10b981;
+        let emissiveHex = 0x054f36;
+
+        if (status.status === "OCCUPIED") {
+          colorHex = 0xe11d48;
+          emissiveHex = 0x580a1c;
+        } else if (status.status === "URGENT_FREE") {
+          colorHex = 0xf59e0b;
+          emissiveHex = 0x613b02;
+        }
+
+        if (isMatch) {
+          emissiveHex = 0xd4af37;
+          mesh.material.emissiveIntensity = 0.85;
+          mesh.scale.set(1.12, 1.12, 1.12);
+        } else {
+          mesh.material.emissiveIntensity = 0.35;
+          mesh.scale.set(1.0, 1.0, 1.0);
+        }
+
+        mesh.material.color.setHex(colorHex);
+        mesh.material.emissive.setHex(emissiveHex);
+      });
+    }
+
+    function focusFloorIn3D(floorKey) {
+      const room = ROOMS.find(r => r.floorKey === floorKey);
+      if (room) {
+        updateHeroRoomCard(room.id);
+        const mesh = roomMeshes.find(m => m.userData.roomId === room.id);
+        if (mesh) {
+          controls.target.copy(mesh.position);
+          camera.position.set(mesh.position.x + 8, mesh.position.y + 6, mesh.position.z + 9);
+        }
+      }
+    }
+
+    function openSquadModalForRoom(roomId) {
+      const room = ROOMS.find(r => r.id === roomId);
+      if (!room) return;
+
+      selectedRoomId = roomId;
+      const status = getRoomStatus(roomId, currentDay, currentPeriod);
+      const untilText = status.freeUntilTime || "05:05 PM";
+      const hoursApprox = (status.freePeriodsCount * 0.9).toFixed(1);
+
+      // Generate dynamic pre-filled message
+      const defaultMsg = `📍 Heading to *${room.name}* (${room.floorLabel})! It's quiet, cool, and free until *${untilText}* (~${hoursApprox} hrs uninterrupted). Let's do our ${currentSquadPurpose} here! Come fast 🚀`;
+      
+      const preview = document.getElementById("squadMessagePreview");
+      preview.value = defaultMsg;
+
+      const whatsappBtn = document.getElementById("btnSendWhatsApp");
+      whatsappBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(defaultMsg)}`;
+
+      document.getElementById("squadModal").classList.remove("hidden");
+      playChime(520);
+    }
+
+    function executeAiRoomFinder(queryText) {
+      if (!queryText || queryText.trim() === "") return;
+
+      const lower = queryText.toLowerCase();
+
+      // Extract Floor
+      let targetFloorKey = null;
+      let floorLabelFound = "Any Royal Floor";
+
+      if (lower.includes("ground") || lower.includes("gf") || lower.includes("1st floor") || lower.includes("first floor")) {
+        targetFloorKey = "GF";
+        floorLabelFound = "Ground / 1st Floor";
+      } else if (lower.includes("2nd floor") || lower.includes("second floor") || lower.includes("2f")) {
+        targetFloorKey = "2F";
+        floorLabelFound = "2nd Floor";
+      } else if (lower.includes("4th floor") || lower.includes("fourth floor") || lower.includes("4f")) {
+        targetFloorKey = "4F";
+        floorLabelFound = "4th Floor";
+      } else if (lower.includes("5th") || lower.includes("5f")) {
+        targetFloorKey = "5F";
+        floorLabelFound = "5th Floor";
+      } else if (lower.includes("6th") || lower.includes("6f")) {
+        targetFloorKey = "6F";
+        floorLabelFound = "6th Floor";
+      } else if (lower.includes("7th") || lower.includes("7f")) {
+        targetFloorKey = "7F";
+        floorLabelFound = "7th Floor";
+      }
+
+      let multiFloor = [];
+      if (lower.includes("5th or 6th") || (lower.includes("5th") && lower.includes("6th"))) {
+        multiFloor = ["5F", "6F"];
+        floorLabelFound = "5th or 6th Floor";
+      }
+
+      // Duration
+      let requestedHours = 1;
+      const hourMatch = lower.match(/(\d+)\s*(hour|hr|hours|hrs)/);
+      if (hourMatch && hourMatch[1]) {
+        requestedHours = parseFloat(hourMatch[1]);
+      } else if (lower.includes("afternoon")) {
+        requestedHours = 3;
+      }
+
+      const needsAc = lower.includes("ac") || lower.includes("air cond") || lower.includes("cool");
+      const needsProjector = lower.includes("projector") || lower.includes("screen") || lower.includes("presentation") || lower.includes("board");
+      const needsLab = lower.includes("lab") || lower.includes("workstation");
+
+      const scoredRooms = ROOMS.map(room => {
+        let score = 50;
+        let reasons = [];
+
+        const statusObj = getRoomStatus(room.id, currentDay, currentPeriod);
+        if (statusObj.status === "OCCUPIED") {
+          score -= 100;
+          return { room, score, statusObj, reasons: ["Currently occupied by class"] };
+        }
+
+        const freeHrs = statusObj.freePeriodsCount * 0.9;
+        if (freeHrs >= requestedHours) {
+          score += 35;
+          reasons.push(`Free for ${freeHrs.toFixed(1)} hrs (Meets requested ${requestedHours}h)`);
+        } else {
+          score -= 15;
+          reasons.push(`Free for ~${freeHrs.toFixed(1)} hrs`);
+        }
+
+        if (multiFloor.length > 0) {
+          if (multiFloor.includes(room.floorKey)) {
+            score += 25;
+            reasons.push(`On requested ${room.floorLabel}`);
+          }
+        } else if (targetFloorKey) {
+          if (room.floorKey === targetFloorKey) {
+            score += 30;
+            reasons.push(`Located on specified ${room.floorLabel}`);
+          } else {
+            score -= 20;
+          }
+        }
+
+        if (needsAc) {
+          if (room.ac) {
+            score += 20;
+            reasons.push("Air Conditioned comfort verified");
+          } else {
+            score -= 25;
+          }
+        }
+
+        if (needsProjector) {
+          if (room.projector) {
+            score += 15;
+            reasons.push("Equipped with Smart Board / Projector");
+          }
+        }
+
+        if (needsLab) {
+          if (room.type === "Lab") {
+            score += 20;
+            reasons.push("Specialized Hardware / Workstation Lab");
+          }
+        }
+
+        return { room, score, statusObj, reasons };
+      });
+
+      const ranked = scoredRooms
+        .filter(item => item.score > 30 && item.statusObj.status !== "OCCUPIED")
+        .sort((a, b) => b.score - a.score);
+
+      displayAiResults(ranked, {
+        floorLabel: floorLabelFound,
+        hours: requestedHours,
+        needsAc
+      });
+    }
+
+    function displayAiResults(rankedList, meta) {
+      const section = document.getElementById("aiResultsSection");
+      const listContainer = document.getElementById("aiRecommendationsList");
+      const feedbackText = document.getElementById("aiQueryFeedback");
+
+      feedbackText.innerHTML = `
+        Day: <strong class="text-regal-gold">${currentDay}</strong> • 
+        Period: <strong class="text-regal-gold">P${currentPeriod}</strong> • 
+        Target: <strong class="text-regal-gold">${meta.hours} Hour(s)</strong> • 
+        Floor: <strong class="text-regal-gold">${meta.floorLabel}</strong>
+        ${meta.needsAc ? ' • <span class="text-emerald-400 font-bold">❄️ AC Verified</span>' : ''}
+      `;
+
+      listContainer.innerHTML = "";
+
+      if (rankedList.length === 0) {
+        listContainer.innerHTML = `
+          <div class="col-span-full p-6 text-center text-slate-300">
+            <p class="font-serif font-bold text-rose-400 text-sm">No classrooms met every strict constraint for that continuous duration.</p>
+            <p class="text-xs text-slate-400 mt-1">Try relaxing floor preferences or reducing requested hours.</p>
+          </div>
+        `;
+        section.classList.remove("hidden");
+        section.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+
+      rankedList.slice(0, 3).forEach((item, idx) => {
+        const r = item.room;
+        const matchPct = Math.min(99, Math.max(80, Math.round(item.score)));
+        const badges = ["Top Match 👑", "Second Choice ⚜️", "Viable Alternative ✨"];
+
+        const card = document.createElement("div");
+        card.className = "rounded-2xl bg-regal-obsidian/95 border-2 border-regal-gold/40 p-4 flex flex-col justify-between hover:border-regal-gold transition-all shadow-xl";
+
+        card.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-serif font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-regal-gold/20 text-regal-champagne border border-regal-gold/40">
+                ${badges[idx] || 'Match'}
+              </span>
+              <span class="text-xs font-bold text-regal-gold">${matchPct}% Match</span>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-serif font-bold text-white">${r.name}</h4>
+              <p class="text-xs text-slate-400">${r.floorLabel} • ${r.type} • Cap: ${r.capacity}</p>
+            </div>
+
+            <div class="bg-regal-navy/60 rounded-xl p-3 border border-regal-gold/20 text-xs space-y-1">
+              <p class="font-bold text-emerald-300">Free until ${item.statusObj.freeUntilTime} (~${(item.statusObj.freePeriodsCount * 0.9).toFixed(1)} hrs)</p>
+              <ul class="text-[11px] text-slate-300 space-y-0.5 pt-1">
+                ${item.reasons.map(res => `<li>• ${res}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-regal-gold/20 flex items-center gap-2">
+            <button onclick="updateHeroRoomCard('${r.id}'); document.getElementById('selectedRoomHero').scrollIntoView({behavior:'smooth'});" class="flex-1 py-2 bg-regal-navy hover:bg-regal-royalBlue border border-regal-gold/30 text-xs font-semibold text-slate-200 rounded-xl transition-colors">
+              Inspect on 3D
+            </button>
+            <button onclick="openSquadModalForRoom('${r.id}')" class="py-2 px-3 gold-btn text-xs font-bold rounded-xl shadow">
+              <i class="fa-brands fa-whatsapp"></i> Call Squad
+            </button>
+          </div>
+        `;
+
+        listContainer.appendChild(card);
+      });
+
+      section.classList.remove("hidden");
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function openRoomScheduleModal(roomId) {
+      const room = ROOMS.find(r => r.id === roomId);
+      if (!room) return;
+
+      document.getElementById("modalRoomTitle").innerText = room.name;
+      document.getElementById("modalRoomSubtitle").innerText = `${room.floorLabel} • Capacity: ${room.capacity} • ${room.type}`;
+
+      const attrContainer = document.getElementById("modalRoomAttributes");
+      attrContainer.innerHTML = `
+        <span class="px-2.5 py-1 rounded-lg bg-regal-obsidian border border-regal-gold/30 text-regal-champagne font-medium">
+          <i class="fa-solid fa-building text-regal-gold mr-1"></i> ${room.floorLabel}
+        </span>
+        <span class="px-2.5 py-1 rounded-lg bg-regal-obsidian border border-regal-gold/30 text-regal-champagne font-medium">
+          <i class="fa-solid fa-users text-regal-gold mr-1"></i> Capacity: ${room.capacity}
+        </span>
+        <span class="px-2.5 py-1 rounded-lg ${room.ac ? 'bg-regal-royalBlue border border-regal-gold/40 text-regal-champagne font-semibold' : 'bg-regal-obsidian border border-slate-800 text-slate-400'}">
+          ${room.ac ? '❄️ Air Conditioned' : 'Non-AC'}
+        </span>
+        <span class="px-2.5 py-1 rounded-lg ${room.projector ? 'bg-regal-navy border border-regal-gold/40 text-regal-gold font-semibold' : 'bg-regal-obsidian border border-slate-800 text-slate-400'}">
+          ${room.projector ? '📽️ Smart Board' : 'Standard Board'}
+        </span>
+      `;
+
+      const tbody = document.getElementById("modalTableBody");
+      tbody.innerHTML = "";
+
+      const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+
+      days.forEach(day => {
+        const row = document.createElement("tr");
+        row.className = "hover:bg-regal-navy/40 transition-colors";
+
+        let rowHtml = `<td class="p-3 font-serif font-bold text-regal-gold bg-regal-obsidian/80">${day}</td>`;
+
+        for (let p = 1; p <= 9; p++) {
+          if (p === 5) {
+            rowHtml += `<td class="p-2 text-center bg-regal-obsidian/90 text-[10px] text-regal-gold font-mono">LUNCH</td>`;
+            continue;
+          }
+
+          const slotData = SCHEDULE_DATA[roomId]?.[day]?.[p];
+          if (slotData) {
+            rowHtml += `
+              <td class="p-2 text-center bg-rose-950/40 border border-rose-900/40">
+                <div class="font-bold text-rose-200 truncate max-w-[90px] mx-auto text-[10px]" title="${slotData.course}">${slotData.course}</div>
+                <div class="text-[9px] text-slate-300 truncate max-w-[90px] mx-auto" title="${slotData.batch}">${slotData.batch}</div>
+                <div class="text-[8px] text-regal-gold truncate max-w-[90px] mx-auto">${slotData.slot ? `Slot ${slotData.slot}` : ''}</div>
+              </td>
+            `;
+          } else {
+            rowHtml += `
+              <td class="p-2 text-center bg-emerald-950/30 border border-emerald-900/30">
+                <span class="text-emerald-300 font-bold text-[10px]">FREE</span>
+              </td>
+            `;
+          }
+        }
+
+        row.innerHTML = rowHtml;
+        tbody.appendChild(row);
+      });
+
+      document.getElementById("roomModal").classList.remove("hidden");
+    }
+
+    // Audio chime generator using Tone.js
+    function playChime(freq = 580) {
+      try {
+        const synth = new Tone.Synth({
+          oscillator: { type: "sine" },
+          envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.5 }
+        }).toDestination();
+        synth.triggerAttackRelease(freq, "8n");
+      } catch (e) {
+        // Fallback silently if Tone context blocked
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toastNotification");
+      const msg = document.getElementById("toastMessage");
+      msg.innerText = message;
+      toast.classList.remove("translate-y-28", "opacity-0");
+      setTimeout(() => {
+        toast.classList.add("translate-y-28", "opacity-0");
+      }, 4000);
+    }
+
+    function refreshAllViews() {
+      updateHeroRoomCard(selectedRoomId);
+      renderFloorGrid();
+      buildBuildingFloors();
+      highlightRoomIn3D(selectedRoomId);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. Initialize 3D Building Digital Twin
+      init3DBuildingModel();
+
+      // 2. Initial state setup
+      updateHeroRoomCard(selectedRoomId);
+      renderFloorGrid();
+
+      // 3. Real-world clock updater
+      setInterval(() => {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById("headerLiveClock").innerText = timeStr;
+
+        const curMinutes = now.getHours() * 60 + now.getMinutes();
+        const pObj = PERIODS.find(p => curMinutes >= p.startMin && curMinutes <= p.endMin);
+        if (pObj) {
+          document.getElementById("headerLivePeriod").innerText = `Live: ${pObj.label} (${pObj.start})`;
+        } else {
+          document.getElementById("headerLivePeriod").innerText = "Campus Active";
+        }
+      }, 1000);
+
+      // 4. View Switcher Toggle
+      const btn3D = document.getElementById("viewToggle3D");
+      const btnGrid = document.getElementById("viewToggleGrid");
+      const sec3D = document.getElementById("section3DView");
+      const secGrid = document.getElementById("sectionGridView");
+
+      btn3D.addEventListener("click", () => {
+        currentViewMode = "3D";
+        btn3D.className = "px-4 py-2 rounded-xl gold-btn text-xs font-bold flex items-center gap-2 transition-all shadow-sm";
+        btnGrid.className = "px-4 py-2 rounded-xl text-slate-300 hover:text-regal-gold text-xs font-semibold flex items-center gap-2 transition-all";
+        sec3D.classList.remove("hidden");
+        // Trigger resize on 3d canvas
+        if (renderer && camera) {
+          const c = document.getElementById("canvas3d-container");
+          camera.aspect = c.clientWidth / c.clientHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(c.clientWidth, c.clientHeight);
+        }
+      });
+
+      btnGrid.addEventListener("click", () => {
+        currentViewMode = "GRID";
+        btnGrid.className = "px-4 py-2 rounded-xl gold-btn text-xs font-bold flex items-center gap-2 transition-all shadow-sm";
+        btn3D.className = "px-4 py-2 rounded-xl text-slate-300 hover:text-regal-gold text-xs font-semibold flex items-center gap-2 transition-all";
+        sec3D.classList.add("hidden");
+      });
+
+      // 5. 3D Explosion / Floor Dissection Toggle
+      document.getElementById("btnExplodeView").addEventListener("click", () => {
+        isDissected = !isDissected;
+        document.getElementById("lblExplodeText").innerText = isDissected ? "Collapse Floors" : "Floor Dissection";
+        buildBuildingFloors();
+        highlightRoomIn3D(selectedRoomId);
+        showToast(isDissected ? "3D Building Dissected Floor-by-Floor" : "3D Building Collapsed");
+      });
+
+      // 6. 3D Camera Reset
+      document.getElementById("btnResetCamera").addEventListener("click", () => {
+        camera.position.set(12, 14, 16);
+        controls.target.set(0, 3, 0);
+        showToast("3D Viewport Reset");
+      });
+
+      // 7. Day button events
+      document.querySelectorAll(".day-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".day-btn").forEach(b => {
+            b.className = "day-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-300 hover:text-regal-gold";
+          });
+          btn.className = "day-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-all gold-btn shadow";
+          currentDay = btn.dataset.day;
+          refreshAllViews();
+        });
+      });
+
+      // 8. Period Selector change
+      document.getElementById("periodSelector").addEventListener("change", (e) => {
+        currentPeriod = parseInt(e.target.value);
+        refreshAllViews();
+      });
+
+      // 9. Floor filter pills
+      document.querySelectorAll(".floor-pill").forEach(pill => {
+        pill.addEventListener("click", () => {
+          document.querySelectorAll(".floor-pill").forEach(p => {
+            p.className = "floor-pill px-3 py-1 rounded-full bg-regal-obsidian border border-regal-gold/30 text-slate-300 hover:text-white font-medium flex items-center gap-1.5 transition-all";
+          });
+          pill.className = "floor-pill active px-3 py-1 rounded-full gold-btn font-bold flex items-center gap-1.5 transition-all shadow-sm";
+          selectedFloor = pill.dataset.floor;
+          renderFloorGrid();
+          if (selectedFloor !== "ALL") {
+            focusFloorIn3D(selectedFloor);
+          }
+        });
+      });
+
+      // 10. Live campus sync button
+      document.getElementById("btnSyncCurrentTime").addEventListener("click", () => {
+        const now = new Date();
+        const dIdx = now.getDay();
+        const dMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        let targetD = dMap[dIdx];
+        if (targetD === "Sun" || targetD === "Sat") targetD = "Mon";
+
+        const curMinutes = now.getHours() * 60 + now.getMinutes();
+        let targetP = 7;
+        for (let p of PERIODS) {
+          if (curMinutes >= p.startMin && curMinutes <= p.endMin) {
+            targetP = p.id;
+            break;
+          }
+        }
+
+        currentDay = targetD;
+        currentPeriod = targetP;
+
+        document.querySelectorAll(".day-btn").forEach(b => {
+          if (b.dataset.day === currentDay) b.className = "day-btn px-3 py-1.5 text-xs font-bold rounded-lg transition-all gold-btn shadow";
+          else b.className = "day-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-300 hover:text-regal-gold";
+        });
+        document.getElementById("periodSelector").value = currentPeriod;
+
+        refreshAllViews();
+        showToast(`⚡ Synced: ${currentDay}, Period ${currentPeriod}`);
+      });
+
+      // 11. AI Search Bar
+      const aiInput = document.getElementById("aiSearchInput");
+      const btnAi = document.getElementById("btnRunAiSearch");
+      btnAi.addEventListener("click", () => executeAiRoomFinder(aiInput.value));
+      aiInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") executeAiRoomFinder(aiInput.value);
+      });
+
+      document.querySelectorAll(".instant-preset-btn").forEach(b => {
+        b.addEventListener("click", () => {
+          aiInput.value = b.dataset.prompt;
+          executeAiRoomFinder(b.dataset.prompt);
+        });
+      });
+
+      document.getElementById("btnCloseAiResults").addEventListener("click", () => {
+        document.getElementById("aiResultsSection").classList.add("hidden");
+      });
+
+      // 12. Call Squad Modal Events
+      document.getElementById("btnCallSquad").addEventListener("click", () => {
+        openSquadModalForRoom(selectedRoomId);
+      });
+
+      document.getElementById("btnCloseSquadModal").addEventListener("click", () => {
+        document.getElementById("squadModal").classList.add("hidden");
+      });
+      document.getElementById("btnDismissSquadModal").addEventListener("click", () => {
+        document.getElementById("squadModal").classList.add("hidden");
+      });
+
+      // Purpose pills
+      document.querySelectorAll(".purpose-pill").forEach(pBtn => {
+        pBtn.addEventListener("click", () => {
+          document.querySelectorAll(".purpose-pill").forEach(pb => {
+            pb.className = "purpose-pill py-2 px-3 rounded-xl border border-regal-gold/30 bg-regal-obsidian text-xs font-semibold text-slate-300 hover:text-white";
+          });
+          pBtn.className = "purpose-pill active py-2 px-3 rounded-xl border border-regal-gold bg-regal-royalBlue text-xs font-bold text-regal-champagne";
+          currentSquadPurpose = pBtn.dataset.purpose;
+          openSquadModalForRoom(selectedRoomId);
+        });
+      });
+
+      // Copy squad text
+      document.getElementById("btnCopySquadLink").addEventListener("click", () => {
+        const text = document.getElementById("squadMessagePreview").value;
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        document.body.removeChild(temp);
+        showToast("📋 Squad invite copied to clipboard!");
+      });
+
+      // 13. Master Schedule Modal
+      document.getElementById("btnOpenScheduleModal").addEventListener("click", () => {
+        openRoomScheduleModal(selectedRoomId);
+      });
+      document.getElementById("btnCloseModal").addEventListener("click", () => {
+        document.getElementById("roomModal").classList.add("hidden");
+      });
+      document.getElementById("btnCloseModalFooter").addEventListener("click", () => {
+        document.getElementById("roomModal").classList.add("hidden");
+      });
+
+      // 14. Analytics Modal
+      document.getElementById("btnOverviewMetrics").addEventListener("click", () => {
+        document.getElementById("statsModal").classList.remove("hidden");
+      });
+      document.getElementById("btnCloseStatsModal").addEventListener("click", () => {
+        document.getElementById("statsModal").classList.add("hidden");
+      });
+      document.getElementById("btnCloseStatsModalBtn").addEventListener("click", () => {
+        document.getElementById("statsModal").classList.add("hidden");
+      });
+    });
+  </script>
+</body>
+</html>
